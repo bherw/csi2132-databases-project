@@ -1,4 +1,4 @@
-package csi2132-project;
+package CSI2132::Project;
 use Mojo::Base 'Mojolicious';
 
 # This method will run once at server start
