@@ -8,4 +8,4 @@ use lib curfile->dirname->sibling('lib')->to_string;
 use Mojolicious::Commands;
 
 # Start command line interface for application
-Mojolicious::Commands->start_app('csi2132-project');
+Mojolicious::Commands->start_app('Csi2132::Project');

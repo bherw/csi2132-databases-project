@@ -1,4 +1,4 @@
-package CSI2132::Project;
+package Csi2132::Project;
 use Mojo::Base 'Mojolicious';
 
 # This method will run once at server start
@@ -13,6 +13,7 @@ sub startup {
 
   # Router
   my $r = $self->routes;
+  $r->namespaces(['Csi2132::Project::Controller']);
 
   # Normal route to controller
   $r->get('/')->to('example#welcome');
