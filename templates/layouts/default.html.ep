@@ -1,5 +1,21 @@
 <!DOCTYPE html>
 <html>
-  <head><title><%= title %></title></head>
-  <body><%= content %></body>
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  </head>
+  <body>
+    <nav class ="light-blue lighten-1" role="navigation">
+      <div class="navigation-wrapper container">
+        <ul>
+          <li><%= link_to 'User View' => '/user' %></li>
+          <li><%= link_to 'Employee View' => '/employee' %></li>
+          <li><%= link_to 'Test Queries' => '/test' %></li>
+        </ul>
+      </div>
+    </nav>
+    <%= content %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" async></script>
+</body>
 </html>
