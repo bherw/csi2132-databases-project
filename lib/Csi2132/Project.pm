@@ -14,8 +14,16 @@ sub startup {
     $self->helper(pg => sub {state $pg = Mojo::Pg->new(shift->config('pg'))});
 
     # Migrate to latest version if necessary
-    my $path = $self->home->child('migrations', 'project.sql');
-    $self->pg->auto_migrate(1)->migrations->name('project')->from_file($path);
+    my $migrations_sql
+        = $self
+        ->home
+        ->child('migrations')
+        ->list
+        ->sort
+        ->map(sub {shift->slurp})
+        ->join("\n");
+    $self->pg->auto_migrate(1)->migrations->name('project')->from_string($migrations_sql);
+    $self->pg->db;
 
     # Router
     my $r = $self->routes;
