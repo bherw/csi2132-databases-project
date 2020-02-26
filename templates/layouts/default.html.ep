@@ -9,7 +9,8 @@
     <nav class ="light-blue lighten-1" role="navigation">
       <div class="navigation-wrapper container">
         <ul>
-          <li><%= link_to 'User View' => '/user' %></li>
+          <li><%= link_to 'Listings' => '/listing' %></li>
+          <li><%= link_to 'Host' => '/host' %></li>
           <li><%= link_to 'Employee View' => '/employee' %></li>
           <li><%= link_to 'Test Queries' => '/test' %></li>
         </ul>
