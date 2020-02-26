@@ -23,6 +23,19 @@ sub startup {
 
   # Normal route to controller
   $r->get('/')->to('example#welcome');
+
+  # Test Queries
+  $r->get('/test')->to('test_queries#index');
+  $r->get('/test/one')->to('test_queries#query_one');
+  $r->get('/test/two')->to('test_queries#query_two');
+  $r->get('/test/three')->to('test_queries#query_three');
+  $r->get('/test/four')->to('test_queries#query_four');
+  $r->get('/test/five')->to('test_queries#query_five');
+  $r->get('/test/six')->to('test_queries#query_six');
+  $r->get('/test/seven')->to('test_queries#query_seven');
+  $r->get('/test/eight')->to('test_queries#query_eight');
+  $r->get('/test/nine')->to('test_queries#query_nine');
+  $r->get('/test/ten')->to('test_queries#query_ten');
 }
 
 1;

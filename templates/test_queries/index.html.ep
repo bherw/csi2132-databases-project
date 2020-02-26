@@ -1,0 +1,40 @@
+% layout 'default';
+% title 'Test Queries';
+
+<div class="section">
+
+    <h1>Test Queries</h1>
+    <ul>
+      <li>
+        %= link_to '1. Give the details of all the guests who rented properties' => url_for '/test/one'
+      </li>
+      <li>
+        %= link_to '2. GuestListView' => url_for '/test/two'
+      </li>
+      <li>
+        %= link_to '3. Display the details of the cheapest (completed) rental' => url_for '/test/three'
+      </li>
+      <li>
+        %= link_to '4. List all the properties rented and sort based on the branch id and review rating' => url_for '/test/four'
+      </li>
+      <li>
+        %= link_to '5. Find the properties that are already listed but not yet rented' => url_for '/test/five'
+      </li>
+      <li>
+        %= link_to '6. List all the details of all properties rented on the 10th day of any month' => url_for '/test/five'
+      </li>
+      <li>
+        %= link_to '7. List all the managers and the employees with salary greater than or equal to $15000' => url_for '/test/five'
+      </li>
+      <li>
+        %= link_to '8. Consider creating a simple bill for a guest' => url_for '/test/five'
+      </li>
+      <li>
+        %= link_to '9. Update the phone number of a guest.' => url_for '/test/five'
+      </li>
+      <li>
+        %= link_to '10. FirstNameFirst' => url_for '/test/five'
+      </li>
+    </ul>
+  </div>
+</div>
