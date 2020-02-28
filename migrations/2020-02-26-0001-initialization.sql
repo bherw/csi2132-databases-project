@@ -52,7 +52,8 @@ CREATE TABLE "person" (
   "postal_code" varchar,
   "email" varchar NOT NULL,
   "is_id_verified" boolean NOT NULL DEFAULT FALSE,
-  "is_address_verified" boolean NOT NULL DEFAULT FALSE
+  "is_address_verified" boolean NOT NULL DEFAULT FALSE,
+  "is_deleted" boolean NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE "property" (
@@ -93,6 +94,7 @@ CREATE TABLE "property" (
   "currency" currency_types,
   "weekly_discount" int NOT NULL DEFAULT 0,
   "monthly_discount" int NOT NULL DEFAULT 0,
+  "is_deleted" boolean NOT NULL DEFAULT FALSE,
 
   -- house rules
   "is_suitable_for_children" boolean,
