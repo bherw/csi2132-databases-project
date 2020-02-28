@@ -2,7 +2,7 @@ package Csi2132::Project::Command::generate_mock_data;
 use Mojo::Base 'Mojolicious::Command';
 
 use Data::Faker;
-use Csi2132::Project::DB '$PERSON';
+use Csi2132::Project::DB;
 
 use constant USER_COUNT => 1000;
 use constant USER_DELETED_CHANCE => 0.05;
