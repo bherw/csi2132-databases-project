@@ -1,6 +1,7 @@
 package Csi2132::Project;
 use Mojo::Base 'Mojolicious';
 use Mojo::Pg;
+use Csi2132::Project::DB;
 
 # This method will run once at server start
 sub startup {
@@ -11,7 +12,13 @@ sub startup {
     $self->secrets($config->{secrets});
 
     # Model
-    $self->helper(pg => sub {state $pg = Mojo::Pg->new(shift->config('pg'))});
+    my $pg = Mojo::Pg->new($config->{pg});
+    $pg->database_class('Csi2132::Project::DB');
+    $self->helper(pg => sub {$pg});
+    $self->helper(db => sub {$pg->db});
+
+    # Commands
+    push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
 
     # Migrate to latest version if necessary
     my $migrations_sql
@@ -22,8 +29,8 @@ sub startup {
         ->sort
         ->map(sub {shift->slurp})
         ->join("\n");
-    $self->pg->auto_migrate(1)->migrations->name('project')->from_string($migrations_sql);
-    $self->pg->db;
+    $pg->auto_migrate(1)->migrations->name('project')->from_string($migrations_sql);
+    $pg->db;
 
     # Router
     my $r = $self->routes;
