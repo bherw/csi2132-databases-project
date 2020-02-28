@@ -14,6 +14,7 @@ sub run {
 
     my $faker = Data::Faker->new;
 
+    # People
     my $people = {};
     for my $id (1 .. USER_COUNT) {
         print "\rGenerating user $id / " . USER_COUNT . "... ";
@@ -35,6 +36,7 @@ sub run {
 
         $db->insert($PERSON, $user);
 
+        # person_phone_number
         my $phone_count = int(rand(USER_AVERAGE_PHONE_NUMBERS)) + 1;
         $user->{phone_numbers} = [];
         for my $i (1 .. $phone_count) {
@@ -43,7 +45,6 @@ sub run {
             $db->insert($PERSON_PHONE_NUMBER, { person_id => $id, phone_number => $number });
         }
     }
-    STDOUT->flush;
     print "done.\n";
 }
 
