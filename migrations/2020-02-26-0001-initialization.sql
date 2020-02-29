@@ -51,7 +51,7 @@ CREATE TABLE "person" (
   "state" varchar,
   "country" varchar,
   "postal_code" varchar,
-  "email" varchar NOT NULL,
+  "email" varchar NOT NULL UNIQUE,
   "is_id_verified" boolean NOT NULL DEFAULT FALSE,
   "is_address_verified" boolean NOT NULL DEFAULT FALSE,
   "is_deleted" boolean NOT NULL DEFAULT FALSE

@@ -16,6 +16,7 @@ sub run {
     my $faker = Data::Faker->new;
 
     # People
+    my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT - 1));
     my $people = {};
     for my $id (1 .. USER_COUNT) {
         print "\rGenerating user $id / " . USER_COUNT . "... ";
@@ -29,8 +30,8 @@ sub run {
             state               => $faker->us_state,
             country             => 'USA',
             postal_code         => $faker->us_zip_code,
-            email               => $faker->email,
             password            => "sha512:" . sha512_base64('password'),
+            email               => shift @user_emails,
             is_id_verified      => rand() > 0.5 ? 1 : 0,
             is_address_verified => rand() > 0.5 ? 1 : 0,
             is_deleted          => rand() < USER_DELETED_CHANCE ? 1 : 0,
@@ -48,6 +49,16 @@ sub run {
         }
     }
     print "done.\n";
+}
+
+sub _generate_unique_emails {
+    my ($self, $count) = @_;
+    my $faker = Data::Faker->new;
+    my %emails;
+    while (keys %emails < $count) {
+        $emails{$faker->email} = ();
+    }
+    return keys %emails;
 }
 
 1;
