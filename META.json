@@ -1,0 +1,59 @@
+{
+   "abstract" : "偽BnB",
+   "author" : [
+      "Ben Herweyer <benjamin.herweyer@gmail.com>",
+      "Robert Zhang <rzhan136@uottawa.ca>",
+      "Sean Lemione <slemo007@uottawa.ca>"
+   ],
+   "dynamic_config" : 0,
+   "license" : [
+      "mit"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Csi2132::Project",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : "0.034"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::More" : "0",
+            "strict" : "0"
+         }
+      },
+      "runtime" : {
+         "recommends" : {
+            "JSON::XS" : "0"
+         },
+         "requires" : {
+            "Const::Fast" : "0",
+            "Mojolicious" : "0",
+            "Mojo::Pg" : "0"
+         }
+      },
+      "test" : {
+         "recommends" : {
+            "CPAN::Meta" : "2.120900"
+         },
+         "requires" : {
+            "Test::More" : "0"
+         }
+      }
+   },
+   "release_status" : "beta",
+   "resources" : {
+      "homepage" : "https://github.com/bherw/csi2132-project",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/bherw/csi2132-project.git",
+         "web" : "https://github.com/bherw/csi2132-project"
+      }
+   },
+   "version" : "0.001"
+}
+

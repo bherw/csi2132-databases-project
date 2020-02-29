@@ -1,5 +1,10 @@
 .idea/dbnavigator.xml
 .idea/perl5local.xml
 .idea/workspace.xml
+Build
+Build/
 csi2132-project.conf
+MYMETA.json
+MYMETA.yml
 _Deparsed_XSubs.pm
+_build_params
