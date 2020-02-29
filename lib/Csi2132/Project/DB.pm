@@ -1,9 +1,12 @@
 package Csi2132::Project::DB;
-use Mojo::Base 'Mojo::Pg::Database';
+use v5.20;
 use Const::Fast;
+use List::Util qw(min);
+use Mojo::Base 'Mojo::Pg::Database';
 
 const our $PERSON => 'person';
 const our $PERSON_PHONE_NUMBER => 'person_phone_number';
+const our $POSTGRES_PLACEHOLDER_LIMIT => 65535;
 
 # This is basically just a less flexible version of the Mojo::Pg::Database->insert
 # method which it's overriding, but this course is about using SQL,
@@ -15,6 +18,27 @@ sub insert {
     my $attributes = join ',', map {quotemeta $_} keys %$values;
     my $placeholders = substr ',?' x scalar(keys %$values), 1;
     $self->query("INSERT INTO $table ($attributes) VALUES($placeholders)", values %$values);
+}
+
+# Insert many rows into the db at once.
+# values should be an arrayref of hashrefs.
+# Assumes that all rows have the same attributes.
+sub insert_all {
+    my ($self, $table, $values) = @_;
+    my @values = @$values;
+    return unless @values;
+    my @attributes = keys %{ $values[0] };
+    my $attributes_str = join ',', map {quotemeta $_} @attributes;
+    my $placeholders_for_one = '(' . substr(',?' x @attributes, 1) . ')';
+
+    while (@values) {
+        my $row_count = min(int($POSTGRES_PLACEHOLDER_LIMIT / @attributes), scalar(@values));
+        my @rows = @values[0..$row_count-1];
+        @values = @values[$row_count..$#values];
+        my $placeholders = substr(("," . $placeholders_for_one) x $row_count, 1);
+        my @bind_values = map { @$_{@attributes} } @rows;
+        $self->query("INSERT INTO $table ($attributes_str) VALUES $placeholders", @bind_values);
+    }
 }
 
 # This class method exports the relation names as constants into packages which
