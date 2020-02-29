@@ -12,6 +12,7 @@ use constant USER_AVERAGE_PHONE_NUMBERS => 1.5;
 sub run {
     my ($self, @argv) = @_;
     my $db = $self->app->db;
+    STDOUT->autoflush(1);
 
     my $faker = Data::Faker->new;
 
