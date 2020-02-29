@@ -4,6 +4,8 @@ use Const::Fast;
 use List::Util qw(min);
 use Mojo::Base 'Mojo::Pg::Database';
 
+const our $BRANCH => 'branch';
+const our $EMPLOYEE => 'employee';
 const our $PERSON => 'person';
 const our $PERSON_PHONE_NUMBER => 'person_phone_number';
 const our $POSTGRES_PLACEHOLDER_LIMIT => 65535;
@@ -46,7 +48,7 @@ sub insert_all {
 # Warning: Contains mild levels of perl magic.
 sub import {
     my $caller = caller;
-    for (qw(PERSON PERSON_PHONE_NUMBER)) {
+    for (qw(BRANCH EMPLOYEE PERSON PERSON_PHONE_NUMBER)) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
     }
