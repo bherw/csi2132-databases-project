@@ -267,17 +267,17 @@ CREATE TABLE "employee" (
   "workplace" varchar NOT NULL,
   "position" position_types NOT NULL,
   "salary" numeric(12,2) NOT NULL,
-  FOREIGN KEY ("person_id") REFERENCES "person" ("person_id"),
-  FOREIGN KEY ("manager_id") REFERENCES "employee" ("person_id")
+  FOREIGN KEY ("person_id") REFERENCES "person" ("person_id") DEFERRABLE INITIALLY IMMEDIATE,
+  FOREIGN KEY ("manager_id") REFERENCES "employee" ("person_id") DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE TABLE "branch" (
   "country" varchar PRIMARY KEY,
   "manager_id" int NOT NULL,
-  FOREIGN KEY ("manager_id") REFERENCES "employee" ("person_id")
+  FOREIGN KEY ("manager_id") REFERENCES "employee" ("person_id") DEFERRABLE INITIALLY IMMEDIATE
 );
 
-ALTER TABLE "employee" ADD FOREIGN KEY ("workplace") REFERENCES "branch" ("country");
+ALTER TABLE "employee" ADD FOREIGN KEY ("workplace") REFERENCES "branch" ("country") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "property" ADD FOREIGN KEY ("country") REFERENCES "branch" ("country");
 
 -- 1 down
