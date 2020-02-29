@@ -1,6 +1,10 @@
 package Csi2132::Project;
+use Carp qw(croak);
+use Digest::SHA qw(sha512_base64);
+use List::Util qw(sum);
 use Mojo::Base 'Mojolicious';
 use Mojo::Pg;
+use Mojo::Util qw(secure_compare);
 use Csi2132::Project::DB;
 
 # This method will run once at server start
@@ -15,6 +19,22 @@ sub startup {
         exit 1;
     }
     $self->secrets($config->{secrets});
+
+    # Salted hash
+    $self->helper(hash_password => sub {
+        my ($self, $type, $password) = @_;
+        croak "Invalid password hash type: $type" if $type ne 'sha512_base64';
+        return _hash_password($type, $config->{secrets}->[0], $password);
+    });
+
+    # Validate salted hash
+    $self->helper(is_valid_password => sub {
+        my ($self, $type, $password, $from_database) = @_;
+        croak "Invalid password hash type: $type" if $type ne 'sha512_base64';
+
+        # Check all salts to prevent timing attacks
+        return 0 < sum 0, map { secure_compare $from_database, _hash_password($type, $_, $password) } @{$config->{secrets}};
+    });
 
     # Commands
     push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
@@ -56,6 +76,12 @@ sub startup {
     $r->get('/test/eight')->to('test_queries#query_eight');
     $r->get('/test/nine')->to('test_queries#query_nine');
     $r->get('/test/ten')->to('test_queries#query_ten');
+}
+
+sub _hash_password {
+    my ($type, $salt, $password) = @_;
+    my $salted_password = $salt . $password;
+    return sha512_base64($salted_password);
 }
 
 1;

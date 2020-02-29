@@ -3,11 +3,11 @@ use Mojo::Base 'Mojolicious::Command';
 
 use Data::Faker;
 use Csi2132::Project::DB;
-use Digest::SHA qw(sha512_base64);
 
 use constant USER_COUNT => 1000;
 use constant USER_DELETED_CHANCE => 0.05;
 use constant USER_AVERAGE_PHONE_NUMBERS => 1.5;
+use constant HASH_TYPE => 'sha512_base64';
 
 sub run {
     my ($self, @argv) = @_;
@@ -18,6 +18,7 @@ sub run {
 
     # People
     my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT - 1));
+    my $password = $self->app->hash_password(HASH_TYPE, 'password');
     my $people = {};
     for my $id (1 .. USER_COUNT) {
         print "\rGenerating user $id / " . USER_COUNT . "... ";
@@ -31,8 +32,9 @@ sub run {
             state               => $faker->us_state,
             country             => 'USA',
             postal_code         => $faker->us_zip_code,
-            password            => "sha512:" . sha512_base64('password'),
             email               => shift @user_emails,
+            password            => $password,
+            password_type       => HASH_TYPE,
             is_id_verified      => rand() > 0.5 ? 1 : 0,
             is_address_verified => rand() > 0.5 ? 1 : 0,
             is_deleted          => rand() < USER_DELETED_CHANCE ? 1 : 0,

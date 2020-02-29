@@ -39,6 +39,7 @@ CREATE TYPE host_languages AS ENUM('English', 'German', 'French', 'Japanese');
 CREATE TYPE rental_agreement_payment_statuses AS ENUM('Pending', 'Payment ongoing', 'Complete');
 CREATE TYPE payment_types AS ENUM('Credit', 'Debit', 'Cash');
 CREATE TYPE payment_statuses AS ENUM('Pending', 'Approved', 'Complete');
+CREATE TYPE password_hash_types AS ENUM('sha512_base64');
 
 CREATE TABLE "person" (
   "person_id" SERIAL PRIMARY KEY,
@@ -46,6 +47,7 @@ CREATE TABLE "person" (
   "middle_name" varchar(255) NOT NULL,
   "last_name" varchar(255) NOT NULL,
   "password" varchar NOT NULL,
+  "password_type" password_hash_types NOT NULL,
   "street_address" varchar,
   "city" varchar,
   "state" varchar,
@@ -276,6 +278,7 @@ CREATE TABLE "branch" (
 );
 
 ALTER TABLE "employee" ADD FOREIGN KEY ("workplace") REFERENCES "branch" ("country");
+ALTER TABLE "property" ADD FOREIGN KEY ("country") REFERENCES "branch" ("country");
 
 -- 1 down
 DROP TABLE IF EXISTS "employee" CASCADE;
@@ -307,3 +310,4 @@ DROP TYPE IF EXISTS rental_agreement_payment_statuses;
 DROP TYPE IF EXISTS payment_types;
 DROP TYPE IF EXISTS payment_statuses;
 DROP TYPE IF EXISTS host_languages;
+DROP TYPE IF EXISTS password_hash_types;
