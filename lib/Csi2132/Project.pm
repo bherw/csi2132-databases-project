@@ -9,16 +9,21 @@ sub startup {
 
     # Config
     my $config = $self->plugin('Config');
+
+    if (!defined $config->{secrets} || @{$config->{secrets}} < 1) {
+        print "Insecure configuration: missing random value for secrets\n";
+        exit 1;
+    }
     $self->secrets($config->{secrets});
+
+    # Commands
+    push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
 
     # Model
     my $pg = Mojo::Pg->new($config->{pg});
     $pg->database_class('Csi2132::Project::DB');
     $self->helper(pg => sub {$pg});
     $self->helper(db => sub {$pg->db});
-
-    # Commands
-    push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
 
     # Migrate to latest version if necessary
     my $migrations_sql
