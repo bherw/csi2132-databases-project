@@ -20,9 +20,9 @@ sub run {
     my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT - 1));
     my $password = $self->app->hash_password(HASH_TYPE, 'password');
     my $people = {};
+    print "Generating " . USER_COUNT . " users...";
     for my $id (1 .. USER_COUNT) {
-        print "\rGenerating user $id / " . USER_COUNT . "... ";
-        $people->{$id} = my $user = {
+        $people->{$id} = {
             person_id           => $id,
             first_name          => $faker->first_name,
             middle_name         => $faker->first_name,
@@ -39,19 +39,25 @@ sub run {
             is_address_verified => rand() > 0.5 ? 1 : 0,
             is_deleted          => rand() < USER_DELETED_CHANCE ? 1 : 0,
         };
+    }
+    $db->insert_all($PERSON, [values %$people]);
+    print " done.\n";
 
-        $db->insert($PERSON, $user);
+    # person_phone_number
+    print "Generating approximately " . (USER_COUNT * USER_AVERAGE_PHONE_NUMBERS) . " phone numbers...";
+    my @phone_numbers;
+    for my $id (1 .. USER_COUNT) {
 
-        # person_phone_number
         my $phone_count = int(rand(USER_AVERAGE_PHONE_NUMBERS)) + 1;
-        $user->{phone_numbers} = [];
+        $people->{$id}{phone_numbers} = [];
         for my $i (1 .. $phone_count) {
             my $number = $faker->phone_number;
-            push @{$user->{phone_numbers}}, $number;
-            $db->insert($PERSON_PHONE_NUMBER, { person_id => $id, phone_number => $number });
+            push @{$people->{$id}{phone_numbers}}, $number;
+            push @phone_numbers, { person_id => $id, phone_number => $number };
         }
     }
-    print "done.\n";
+    $db->insert_all($PERSON_PHONE_NUMBER, \@phone_numbers);
+    print " done.\n";
 }
 
 sub _generate_unique_emails {
