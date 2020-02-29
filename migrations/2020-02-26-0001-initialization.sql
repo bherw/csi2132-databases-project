@@ -45,6 +45,7 @@ CREATE TABLE "person" (
   "first_name" varchar(255) NOT NULL,
   "middle_name" varchar(255) NOT NULL,
   "last_name" varchar(255) NOT NULL,
+  "password" varchar NOT NULL,
   "street_address" varchar,
   "city" varchar,
   "state" varchar,

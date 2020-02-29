@@ -3,6 +3,7 @@ use Mojo::Base 'Mojolicious::Command';
 
 use Data::Faker;
 use Csi2132::Project::DB;
+use Digest::SHA qw(sha512_base64);
 
 use constant USER_COUNT => 1000;
 use constant USER_DELETED_CHANCE => 0.05;
@@ -29,6 +30,7 @@ sub run {
             country             => 'USA',
             postal_code         => $faker->us_zip_code,
             email               => $faker->email,
+            password            => "sha512:" . sha512_base64('password'),
             is_id_verified      => rand() > 0.5 ? 1 : 0,
             is_address_verified => rand() > 0.5 ? 1 : 0,
             is_deleted          => rand() < USER_DELETED_CHANCE ? 1 : 0,
