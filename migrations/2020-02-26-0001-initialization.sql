@@ -63,6 +63,7 @@ CREATE TABLE "property" (
   "property_id" SERIAL PRIMARY KEY,
   "title" varchar NOT NULL DEFAULT 'Untitled Listing',
   "street_address" varchar NOT NULL DEFAULT '',
+  "city" varchar NOT NULL DEFAULT '',
   "state" varchar NOT NULL DEFAULT '',
   "country" varchar NOT NULL DEFAULT '',
   "postal_code" varchar NOT NULL DEFAULT '',
@@ -99,8 +100,8 @@ CREATE TABLE "property" (
   "min_price" numeric(12,2),
   "max_price" numeric(12,2),
   "currency" currency_types,
-  "weekly_discount" int NOT NULL DEFAULT 0,
-  "monthly_discount" int NOT NULL DEFAULT 0,
+  "weekly_discount" int NOT NULL DEFAULT 0 CHECK ("weekly_discount" BETWEEN 0 AND 100),
+  "monthly_discount" int NOT NULL DEFAULT 0 CHECK ("monthly_discount" BETWEEN 0 AND 100),
   "is_deleted" boolean NOT NULL DEFAULT FALSE,
 
   -- house rules
@@ -121,7 +122,7 @@ CREATE TABLE "property" (
   "weapons_on_property" text,
   "dangerous_animals_on_property" text,
 
-  CHECK (
+  CONSTRAINT property_check_is_is_published CHECK (
     NOT is_published OR (
       "street_address" <> '' AND
       "state" <> '' AND
@@ -137,10 +138,16 @@ CREATE TABLE "property" (
       "max_price" IS NOT NULL AND
       "currency" IS NOT NULL AND
       "checkout_time_to" IS NOT NULL
-    ) AND
-    "weekly_discount" BETWEEN 0 AND 100 AND
-    "monthly_discount" BETWEEN 0 AND 100
-  )
+    )
+  ),
+  CONSTRAINT property_check_checkin_time_gt CHECK (NOT is_published OR "checkin_time_from" <= "checkin_time_to"),
+  CONSTRAINT property_check_checkout_time_gt CHECK (NOT is_published OR "checkout_time_from" <= "checkout_time_to"),
+  CONSTRAINT property_check_pricing CHECK (
+    NOT is_published OR (
+      base_price >= min_price AND base_price <= max_price AND min_price <= max_price
+    )
+  ),
+  CONSTRAINT property_check_stay_length CHECK (NOT is_published OR min_stay_length <= max_stay_length)
 );
 
 CREATE TABLE "property_available_date" (
@@ -212,24 +219,16 @@ CREATE TABLE "reviews" (
   "person_id" int,
   "created_at" timestamp NOT NULL DEFAULT NOW(),
   "updated_at" timestamp NOT NULL DEFAULT NOW(),
-  "location" int NOT NULL,
-  "communication" int NOT NULL,
-  "check_in" int NOT NULL,
-  "accuracy" int NOT NULL,
-  "cleanliness" int NOT NULL,
-  "value" int NOT NULL,
+  "location" int NOT NULL CHECK ("location" BETWEEN 1 AND 5),
+  "communication" int NOT NULL CHECK ("communication" BETWEEN 1 AND 5),
+  "check_in" int NOT NULL CHECK ("check_in" BETWEEN 1 AND 5),
+  "accuracy" int NOT NULL CHECK ("accuracy" BETWEEN 1 AND 5),
+  "cleanliness" int NOT NULL CHECK ("cleanliness" BETWEEN 1 AND 5),
+  "value" int NOT NULL CHECK ("value" BETWEEN 1 AND 5),
   "comments" text NOT NULL DEFAULT '',
   PRIMARY KEY ("property_id", "person_id"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id"),
-  FOREIGN KEY ("person_id") REFERENCES "person" ("person_id"),
-  CHECK (
-    "location" BETWEEN 1 AND 5 AND
-    "communication" BETWEEN 1 AND 5 AND
-    "check_in" BETWEEN 1 AND 5 AND
-    "accuracy" BETWEEN 1 AND 5 AND
-    "cleanliness" BETWEEN 1 AND 5 AND
-    "value" BETWEEN 1 AND 5
-  )
+  FOREIGN KEY ("person_id") REFERENCES "person" ("person_id")
 );
 
 CREATE TABLE "rental_agreement" (
