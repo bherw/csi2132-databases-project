@@ -2,25 +2,66 @@ package Csi2132::Project::Command::generate_mock_data;
 use Const::Fast;
 use Csi2132::Project::DB;
 use Data::Faker;
+use Text::Lorem;
 use Mojo::Base 'Mojolicious::Command';
 
 use constant EMPLOYEE_COUNT => 1000;
+use constant PROPERTY_COUNT => 1000;
 use constant USER_COUNT => 1000;
 use constant USER_DELETED_CHANCE => 0.05;
 use constant USER_AVERAGE_PHONE_NUMBERS => 1.5;
 use constant HASH_TYPE => 'sha512_base64';
+use constant MAX_BEDROOMS => 6;
+use constant MAX_BATHROOMS => 4;
+use constant BEDROOM_BED_FACTOR => 2;
+use constant MAX_DAYS_OF_NOTICE_REQUIRED => 7;
+use constant SAMEDAY_BOOKING_CHANCE => 0.8;
+use constant MAX_ADVANCE_BOOKING => 6;
+use constant MIN_STAY_LONGER_THAN_ONE_CHANCE => 0.2;
+use constant MAX_MIN_STAY => 30;
+use constant MAX_STAY_LENGTH_GT_MIN_STAY_CHANCE => 0.8;
+use constant MAX_STAY_LENGTH => 365;
+use constant BASE_PRICE_MEAN => 60;
+use constant BASE_PRICE_SD => 30;
+use constant MAX_WEEKLY_DISCOUNT => 20;
+use constant MAX_MONTHLY_DISCOUNT => 20;
+use constant PROPERTY_DELETED_CHANCE => 0.05;
+use constant PROPERTY_PUBLISHED_CHANCE => 0.95;
+use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.2;
 
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
+const my @PROPERTY_TYPES => (
+    # Apartment
+    'Apartment', 'Condominium', 'Casa particular (Cuba)', 'Loft', 'Serviced apartment',
+
+    # House
+    'House', 'Bungalow', 'Cabin', 'Chalet', 'Cottage', 'Cycladic house (Greece)', 'Dammuso (Italy)', 'Dome house', 'Earth house', 'Farm stay', 'Houseboat', 'Hut', 'Lighthouse', 'Pension (South Korea)', 'Shepherds Hut (U.K., France)', 'Tiny house', 'Townhouse', 'Trullo (Italy)', 'Villa',
+
+    # Secondary unit
+    'Guesthouse', 'Guest suite',
+
+    # Unique space
+    'Barn', 'Boat', 'Bus', 'Camper/RV', 'Campsite', 'Castle', 'Cave', 'Igloo', 'Island', 'Plane', 'Tent', 'Teepee', 'Train', 'Treehouse', 'Windmill', 'Yurt',
+
+    # Bed and breakfast
+    'Minsu (Taiwan)', 'Nature lodge', 'Ryokan (Japan)',
+
+    # Boutique hotel
+    'Boutique hotel', 'Aparthotel', 'Heritage hotel (India)', 'Hostel', 'Hotel', 'Resort', 'Kezhan (China)'
+);
+const my @ROOM_TYPES => ('Entire place', 'Private room', 'Hotel room', 'Shared room');
+const my @CURRENCY_TYPES => ('CAD', 'USD');
 
 my $faker = Data::Faker->new;
 
 sub run {
     my ($self, @argv) = @_;
     my $db = $self->app->db;
+    my $lorem = Text::Lorem->new;
     STDOUT->autoflush(1);
 
     # People
-    my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT - 1));
+    my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT -1));
 
     my $people = {};
     print "Generating " . USER_COUNT . " users...";
@@ -30,7 +71,7 @@ sub run {
             email     => shift @user_emails,
         );
     }
-    $db->insert_all($PERSON, [values %$people]);
+    $db->insert_all($PERSON, [ values %$people ]);
     print " done.\n";
 
     # person_phone_number
@@ -51,7 +92,7 @@ sub run {
 
     # Branches with managers
     print "Generating " . EMPLOYEE_COUNT . " employees for " . scalar(@COUNTRIES) . ' countries...';
-    my $person_id = USER_COUNT + 1;
+    my $person_id = USER_COUNT +1;
     my $employees_person = {};
     my $employees = {};
     my $branches = {};
@@ -78,8 +119,8 @@ sub run {
             manager_id => $manager_id
         };
         $employees_person->{$manager_id} = $self->_generate_person(
-            person_id  => $manager_id,
-            email      => "manager-$country\@nisebnb.com",
+            person_id => $manager_id,
+            email     => "manager-$country\@nisebnb.com",
         );
         $employees->{$manager_id} = {
             person_id  => $manager_id,
@@ -110,12 +151,87 @@ sub run {
     {
         my $tx = $db->begin;
         $db->query('SET CONSTRAINTS branch_manager_id_fkey DEFERRED');
-        $db->insert_all($BRANCH, [values %$branches]);
-        $db->insert_all($PERSON, [values %$employees_person]);
-        $db->insert_all($EMPLOYEE, [values %$employees]);
+        $db->insert_all($BRANCH, [ values %$branches ]);
+        $db->insert_all($PERSON, [ values %$employees_person ]);
+        $db->insert_all($EMPLOYEE, [ values %$employees ]);
         $tx->commit;
     }
     say ' done.';
+
+    print "Generating @{[ PROPERTY_COUNT ]} properties...";
+    my $properties = {};
+    for my $property_id (1 .. PROPERTY_COUNT) {
+        my $owner = _random_person($people);
+        my $property_type = _random_element(@PROPERTY_TYPES);
+        my $num_bedrooms = int(rand(MAX_BEDROOMS));
+        my $checkin_time_from = int(rand(24));
+        my $checkin_time_to = $checkin_time_from + int(rand(24 - $checkin_time_from));
+        my $checkout_time_from = int(rand(24));
+        my $checkout_time_to = $checkout_time_from + int(rand(24 - $checkout_time_from));
+        my $min_stay_length = 1 + (rand() < MIN_STAY_LONGER_THAN_ONE_CHANCE ? int(rand(MAX_MIN_STAY)) : 0);
+        my $max_stay_length = $min_stay_length + (rand() < MAX_STAY_LENGTH_GT_MIN_STAY_CHANCE ? int(rand(MAX_STAY_LENGTH -$min_stay_length)) : 0);
+
+        # This calculation is wrong, but it could be fixed later. At least the constants are named properly.
+        my $base_price = BASE_PRICE_MEAN +(rand() > 0.5 ? -1 : 1) * BASE_PRICE_SD;
+
+        $properties->{$property_id} = {
+            property_id                            => $property_id,
+            title                                  => "$owner->{first_name}'s $property_type",
+            street_address                         => $faker->street_address,
+            city                                   => $faker->city,
+            state                                  => $faker->us_state,
+            country                                => $owner->{country},
+            postal_code                            => $faker->us_zip_code,
+            is_published                           => rand() < PROPERTY_PUBLISHED_CHANCE ? 1 : 0,
+            is_dedicated_guest_space               => rand() < 0.5 ? 1 : 0,
+            is_instant_book_enabled                => rand() < 0.5 ? 1 : 0,
+            property_type                          => $property_type,
+            room_type                              => _random_element(@ROOM_TYPES),
+            neighborhood                           => rand() < 0.5 ? $faker->city : '',
+            num_bathrooms                          => int(rand(MAX_BATHROOMS)),
+            num_bedrooms                           => $num_bedrooms,
+            num_beds                               => $num_bedrooms + int(rand($num_bedrooms * (BEDROOM_BED_FACTOR -1))),
+            checkin_time_from                      => sprintf('%02d:00', $checkin_time_from),
+            checkin_time_to                        => sprintf('%02d:00', $checkin_time_to),
+            checkout_time_from                     => sprintf('%02d:00', $checkout_time_from),
+            checkout_time_to                       => sprintf('%02d:00', $checkout_time_to),
+            requires_guest_id_validation           => 0,
+            requires_guest_good_reputation         => 0,
+            summary                                => $lorem->paragraphs(int(rand(1)) + 1),
+            your_space                             => $lorem->paragraphs(int(rand(1)) + 1),
+            your_availability                      => $lorem->paragraphs(int(rand(1)) + 1),
+            your_neighborhood                      => $lorem->paragraphs(int(rand(1)) + 1),
+            getting_around                         => $lorem->paragraphs(int(rand(1)) + 1),
+            days_of_notice_required                => int(rand(MAX_DAYS_OF_NOTICE_REQUIRED)),
+            sameday_booking_allowed_before_time    => rand() < SAMEDAY_BOOKING_CHANCE ? sprintf('%02d:00', int(rand(24))) : undef,
+            advance_booking_allowed_for_num_months => rand() < ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE ? undef : int(rand(MAX_ADVANCE_BOOKING)),
+            min_stay_length                        => $min_stay_length,
+            max_stay_length                        => $max_stay_length,
+            base_price                             => $base_price,
+            min_price                              => $base_price,
+            max_price                              => $base_price,
+            currency                               => _random_element(@CURRENCY_TYPES),
+            weekly_discount                        => int(rand(MAX_WEEKLY_DISCOUNT)),
+            monthly_discount                       => int(rand(MAX_MONTHLY_DISCOUNT)),
+            is_deleted                             => rand() < PROPERTY_DELETED_CHANCE ? 1 : 0,
+            is_suitable_for_children               => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
+            is_suitable_for_infants                => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
+            is_suitable_for_pets                   => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
+            is_smoking_allowed                     => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
+            is_events_or_parties_allowed           => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
+            must_climb_stairs                      => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            potential_for_noise                    => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            pets_live_on_property                  => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            no_parking_on_property                 => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            some_spaces_are_shared                 => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            amenity_limitations                    => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            surveillance_on_property               => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            weapons_on_property                    => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+            dangerous_animals_on_property          => rand() < 0.5 ? $lorem->get_paragraph(rand(2) + 1) : undef,
+        };
+    }
+    $db->insert_all($PROPERTY, [ values %$properties ]);
+    say " done.";
 }
 
 sub _generate_person {
@@ -149,7 +265,17 @@ sub _generate_unique_emails {
 }
 
 sub _random_country {
-    @COUNTRIES[int(rand(scalar @COUNTRIES))]
+    _random_element(@COUNTRIES)
+}
+
+sub _random_element {
+    @_[int(rand(scalar @_))]
+}
+
+sub _random_person {
+    my $people = shift;
+    my @ids = keys %$people;
+    return $people->{@ids[int(rand(scalar @ids))]};
 }
 
 1;

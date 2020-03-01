@@ -9,6 +9,7 @@ const our $EMPLOYEE => 'employee';
 const our $PERSON => 'person';
 const our $PERSON_PHONE_NUMBER => 'person_phone_number';
 const our $POSTGRES_PLACEHOLDER_LIMIT => 65535;
+const our $PROPERTY => 'property';
 
 # This is basically just a less flexible version of the Mojo::Pg::Database->insert
 # method which it's overriding, but this course is about using SQL,
@@ -48,7 +49,7 @@ sub insert_all {
 # Warning: Contains mild levels of perl magic.
 sub import {
     my $caller = caller;
-    for (qw(BRANCH EMPLOYEE PERSON PERSON_PHONE_NUMBER)) {
+    for (qw(BRANCH EMPLOYEE PERSON PERSON_PHONE_NUMBER PROPERTY)) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
     }
