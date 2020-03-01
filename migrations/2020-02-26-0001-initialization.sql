@@ -88,7 +88,11 @@ CREATE TABLE "property" (
   "getting_around" text NOT NULL DEFAULT '',
   "days_of_notice_required" int NOT NULL DEFAULT 0,
   "sameday_booking_allowed_before_time" time,
+
+  -- null value: indefinitely allowed
+  -- value: 0: all days blocked by default, must manually unblock.
   "advance_booking_allowed_for_num_months" int,
+
   "min_stay_length" int NOT NULL DEFAULT 1,
   "max_stay_length" int NOT NULL DEFAULT 1,
   "base_price" numeric(12,2),
