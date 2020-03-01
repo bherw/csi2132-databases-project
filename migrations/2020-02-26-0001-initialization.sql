@@ -13,7 +13,7 @@ CREATE TYPE property_types AS ENUM(
 'Barn', 'Boat', 'Bus', 'Camper/RV', 'Campsite', 'Castle', 'Cave', 'Igloo', 'Island', 'Plane', 'Tent', 'Teepee', 'Train', 'Treehouse', 'Windmill', 'Yurt',
 
 -- Bed and breakfast
-'Minsu (Taiwan)', 'Nature lodge', 'Ryokan (Japan)'
+'Minsu (Taiwan)', 'Nature lodge', 'Ryokan (Japan)',
 
 -- Boutique hotel
 'Boutique hotel', 'Aparthotel', 'Heritage hotel (India)', 'Hostel', 'Hotel', 'Resort', 'Kezhan (China)'
