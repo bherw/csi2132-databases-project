@@ -94,6 +94,7 @@ sub startup {
     $r->get('/test/nine')->to('test_queries#query_nine');
     $r->get('/test/ten')->to('test_queries#query_ten');
 
+    $r->get('/user')->to('user#show');
     $r->get('/user/login')->to('user#login');
     $r->post('/user/login')->to('user#post_login');
     $r->get('/user/logout')->to('user#logout');

@@ -1,0 +1,26 @@
+% layout 'default';
+% my $user = current_user;
+% title $user->full_name;
+
+<div class="row">
+<div class="col s12">
+<h1>
+    <%= $user->full_name %>
+</h1>
+<div>
+<div style="display:flex">
+    <div style="margin-right: 1rem;" class="blue-text accent-3">
+        <i class="material-icons">email</i>
+    </div>
+    <div><%= $user->email %></div>
+</div>
+<div style="display:flex">
+    <div style="margin-right: 1rem;" class="blue-text accent-3">
+        <i class="material-icons">location_on</i>
+    </div>
+    <div>
+        <%= $user->street_address %><br/>
+        <%= $user->city %>, <%= $user->state %>, <%= $user->postal_code %><br/>
+        <%= $user->country %>
+    </div>
+</div>
