@@ -7,6 +7,8 @@ use Mojo::Pg;
 use Mojo::Util qw(secure_compare);
 use Csi2132::Project::DB;
 
+use constant DEFAULT_PASSWORD_TYPE => 'sha512_base64';
+
 # This method will run once at server start
 sub startup {
     my $self = shift;
@@ -36,6 +38,17 @@ sub startup {
         return 0 < sum 0, map { secure_compare $from_database, _hash_password($type, $_, $password) } @{$config->{secrets}};
     });
 
+    $self->helper(current_user => sub {
+        my ($self) = @_;
+        return unless my $person_id = $self->session('person_id');
+        if (my $current_user = $self->stash('current_user')) {
+            return $current_user;
+        }
+        my $current_user = $self->people->load_by_id($person_id);
+        $self->stash(current_user => $current_user);
+        $current_user
+    });
+
     # Commands
     push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
 
@@ -44,6 +57,10 @@ sub startup {
     $pg->database_class('Csi2132::Project::DB');
     $self->helper(pg => sub {$pg});
     $self->helper(db => sub {$pg->db});
+    $self->helper(people => sub {
+        require Csi2132::Project::DB::Person;
+        state $people = Csi2132::Project::DB::Person->new(pg => $pg)
+    });
 
     # Migrate to latest version if necessary
     my $migrations_sql
@@ -76,6 +93,10 @@ sub startup {
     $r->get('/test/eight')->to('test_queries#query_eight');
     $r->get('/test/nine')->to('test_queries#query_nine');
     $r->get('/test/ten')->to('test_queries#query_ten');
+
+    $r->get('/user/login')->to('user#login');
+    $r->post('/user/login')->to('user#post_login');
+    $r->get('/user/logout')->to('user#logout');
 }
 
 sub _hash_password {

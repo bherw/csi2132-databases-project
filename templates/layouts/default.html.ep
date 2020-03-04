@@ -42,7 +42,7 @@
       % if (flash('messages') || flash('message')) {
       <div class="row">
         <div class="col s12">
-          % for my $row (@{flash('message') // []}, flash('message')) {
+          % for my $row (@{flash('messages') // []}, flash('message')) {
             <div class="row blue"><%= $row %></div>
           % }
          </div>
