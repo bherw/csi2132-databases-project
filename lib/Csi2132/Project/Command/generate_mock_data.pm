@@ -34,6 +34,7 @@ use constant PROPERTY_ACCESSIBILITY_CHANCE => 0.1;
 use constant PROPERTY_AMENITY_CHANCE => 0.50;
 use constant PROPERTY_HOST_LANGUAGE_CHANCE => 0.5;
 use constant PROPERTY_CUSTOM_HOUSE_RULE_CHANCE => 0.25;
+use constant PROPERTY_BEDROOMS_SPECIFIED_CHANCE => 0.5;
 
 const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
@@ -59,6 +60,7 @@ const my @PROPERTY_TYPES => (
 const my @ROOM_TYPES => ('Entire place', 'Private room', 'Hotel room', 'Shared room');
 const my @CURRENCY_TYPES => ('CAD', 'USD');
 const my @AMENITY_TYPES => ('Essentials', 'Air conditioning', 'Heat', 'Hair dryer', 'Closet / drawers', 'Iron', 'TV', 'Fireplace', 'Private entrance', 'Shampoo', 'Wifi', 'Desk/workspace', 'Breakfast, coffee, tea', 'Fire extinguisher', 'Carbon monoxide detector', 'Smoke detector', 'First aid kit', 'Indoor fireplace', 'Hangers', 'Crib', 'High chair', 'Self check-in', 'Private bathroom', 'Beachfront', 'Waterfront', 'Ski-in/ski-out');
+const my @BED_TYPES => ('King', 'Queen', 'Double', 'Single');
 const my @HOST_LANGUAGES => ('English', 'German', 'French', 'Japanese');
 
 my $faker = Data::Faker->new;
@@ -71,6 +73,7 @@ has properties => sub { shift->generate_properties };
 has properties_available_dates => sub { shift->generate_property_available_dates };
 has properties_accessibility => sub { shift->generate_property_accessibility };
 has properties_amenity => sub { shift->generate_property_amenity };
+has properties_bedroom => sub { shift->generate_property_bedroom };
 has properties_custom_house_rule => sub { shift->generate_property_custom_house_rule };
 has properties_host_language => sub { shift->generate_property_host_language };
 
@@ -85,6 +88,7 @@ sub run {
     $self->properties_available_dates;
     $self->properties_accessibility;
     $self->properties_amenity;
+    $self->properties_bedroom;
     $self->properties_custom_house_rule;
     $self->properties_host_language;
 }
@@ -343,6 +347,42 @@ sub generate_property_accessibility($self) {
 
 sub generate_property_amenity($self) {
     return $self->generate_property_enum($PROPERTY_AMENITY, 'amenity', \@AMENITY_TYPES, PROPERTY_AMENITY_CHANCE);
+}
+sub generate_property_bedroom($self) {
+    my $db = $self->app->db;
+    my $properties = $self->properties;
+    print "Generating bedrooms...";
+
+    if ($db->query("SELECT 1 FROM $PROPERTY_BEDROOM LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return;
+    }
+
+    my @property_bedroom;
+    for my $property (values %$properties) {
+        next unless rand() < PROPERTY_BEDROOMS_SPECIFIED_CHANCE;
+
+        my %bed_mapping;
+        my $num_bedrooms = $property->{num_bedrooms};
+        my $num_beds = $property->{num_beds};
+        for (1 .. $num_beds) {
+            $bed_mapping{int(rand($num_bedrooms))}->{_random_element(@BED_TYPES)}++;
+        }
+
+        for my $bedroom (keys %bed_mapping) {
+            for my $bed_type (keys %{ $bed_mapping{$bedroom} }) {
+                push @property_bedroom, {
+                    property_id    => $property->{property_id},
+                    bedroom_number => $bedroom,
+                    bed_type       => $bed_type,
+                    num_beds       => $bed_mapping{$bedroom}->{$bed_type},
+                }
+            }
+        }
+    }
+    $db->insert_all($PROPERTY_BEDROOM, \@property_bedroom);
+    say " done.";
+    return \@property_bedroom;
 }
 
 sub generate_property_custom_house_rule($self) {

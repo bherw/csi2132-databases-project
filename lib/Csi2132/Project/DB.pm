@@ -13,6 +13,7 @@ const our $PROPERTY => 'property';
 const our $PROPERTY_AVAILABLE_DATE => 'property_available_date';
 const our $PROPERTY_ACCESSIBILITY => 'property_accessibility';
 const our $PROPERTY_AMENITY => 'property_amenity';
+const our $PROPERTY_BEDROOM => 'property_bedroom';
 const our $PROPERTY_CUSTOM_HOUSE_RULE => 'property_custom_house_rule';
 const our $PROPERTY_HOST_LANGUAGE => 'property_host_language';
 
@@ -61,7 +62,7 @@ sub import {
     my $caller = caller;
     for (qw(BRANCH EMPLOYEE PERSON PERSON_PHONE_NUMBER PROPERTY
         PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY PROPERTY_AMENITY
-        PROPERTY_CUSTOM_HOUSE_RULE PROPERTY_HOST_LANGUAGE
+        PROPERTY_BEDROOM PROPERTY_CUSTOM_HOUSE_RULE PROPERTY_HOST_LANGUAGE
     )) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
