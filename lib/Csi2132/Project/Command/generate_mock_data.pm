@@ -3,7 +3,7 @@ use Const::Fast;
 use Csi2132::Project::DB;
 use Data::Faker;
 use Text::Lorem;
-use Mojo::Base 'Mojolicious::Command';
+use Mojo::Base 'Mojolicious::Command', -signatures;
 
 use constant EMPLOYEE_COUNT => 1000;
 use constant PROPERTY_COUNT => 1000;
@@ -28,6 +28,7 @@ use constant MAX_MONTHLY_DISCOUNT => 20;
 use constant PROPERTY_DELETED_CHANCE => 0.05;
 use constant PROPERTY_PUBLISHED_CHANCE => 0.95;
 use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.2;
+use constant BLOCKED_PROPERTIES_GENERATE_DAYS => 365;
 
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
 const my @PROPERTY_TYPES => (
@@ -60,11 +61,18 @@ sub run {
     my $lorem = Text::Lorem->new;
     STDOUT->autoflush(1);
 
+    my $people = $self->generate_people;
+    $self->generate_employees;
+    my $properties = $self->generate_properties;
+
+sub generate_people($self) {
+    my $db = $self->app->db;
+    print "Generating " . USER_COUNT . " users...";
+
     # People
     my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT -1));
 
     my $people = {};
-    print "Generating " . USER_COUNT . " users...";
     for my $id (1 .. USER_COUNT) {
         $people->{$id} = $self->_generate_person(
             person_id => $id,
@@ -89,6 +97,10 @@ sub run {
     }
     $db->insert_all($PERSON_PHONE_NUMBER, \@phone_numbers);
     print " done.\n";
+}
+
+sub generate_employees($self) {
+    my $db = $self->app->db;
 
     # Branches with managers
     print "Generating " . EMPLOYEE_COUNT . " employees for " . scalar(@COUNTRIES) . ' countries...';
@@ -157,7 +169,9 @@ sub run {
         $tx->commit;
     }
     say ' done.';
+}
 
+sub generate_properties($self) {
     print "Generating @{[ PROPERTY_COUNT ]} properties...";
     my $properties = {};
     for my $property_id (1 .. PROPERTY_COUNT) {
@@ -232,6 +246,8 @@ sub run {
     }
     $db->insert_all($PROPERTY, [ values %$properties ]);
     say " done.";
+
+    return $properties;
 }
 
 sub _generate_person {
