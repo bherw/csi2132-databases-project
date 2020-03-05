@@ -12,9 +12,6 @@ sub post_login($self) {
     }
 
     my $user = $self->people->load_by_email($email);
-    use Data::Dumper;
-    warn Dumper($user);
-
     if ($user) {
         if ($self->is_valid_password($user->password_type, $password, $user->password)) {
             $self->session(person_id => $user->person_id);
