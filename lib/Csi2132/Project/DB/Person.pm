@@ -1,5 +1,6 @@
 package Csi2132::Project::DB::Person;
 use Mojo::Base -base, -signatures;
+use Csi2132::Project::DB;
 use Csi2132::Project::Model::Person;
 use Csi2132::Project::Model::Employee;
 
@@ -8,12 +9,12 @@ has 'person_class' => 'Csi2132::Project::Model::Person';
 has 'employee_class' => 'Csi2132::Project::Model::Employee';
 
 sub load_by_email($self, $email) {
-    my $attrs = $self->pg->db->query('SELECT * FROM "person" LEFT JOIN "employee" USING (person_id) WHERE "email"=?', $email)->hash;
+    my $attrs = $self->pg->db->query("SELECT * FROM $PERSON LEFT JOIN $EMPLOYEE USING (person_id) WHERE email=?", $email)->hash;
     return $self->_inflate($attrs);
 }
 
 sub load_by_id($self, $id) {
-    my $attrs = $self->pg->db->query('SELECT * FROM "person" LEFT JOIN "employee" USING (person_id) WHERE "person_id"=?', $id)->hash;
+    my $attrs = $self->pg->db->query("SELECT * FROM $PERSON LEFT JOIN $EMPLOYEE USING (person_id) WHERE person_id=?", $id)->hash;
     return $self->_inflate($attrs);
 }
 
