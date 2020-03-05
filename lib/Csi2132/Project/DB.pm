@@ -13,6 +13,7 @@ const our $PROPERTY => 'property';
 const our $PROPERTY_AVAILABLE_DATE => 'property_available_date';
 const our $PROPERTY_ACCESSIBILITY => 'property_accessibility';
 const our $PROPERTY_AMENITY => 'property_amenity';
+const our $PROPERTY_HOST_LANGUAGE => 'property_host_language';
 
 # This is basically just a less flexible version of the Mojo::Pg::Database->insert
 # method which it's overriding, but this course is about using SQL,
@@ -58,7 +59,9 @@ sub insert_all {
 sub import {
     my $caller = caller;
     for (qw(BRANCH EMPLOYEE PERSON PERSON_PHONE_NUMBER PROPERTY
-        PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY PROPERTY_AMENITY)) {
+        PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY PROPERTY_AMENITY
+        PROPERTY_HOST_LANGUAGE
+    )) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
     }
