@@ -30,7 +30,9 @@ use constant PROPERTY_DELETED_CHANCE => 0.05;
 use constant PROPERTY_PUBLISHED_CHANCE => 0.95;
 use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.2;
 use constant BLOCKED_PROPERTIES_GENERATE_DAYS => 365;
+use constant PROPERTY_ACCESSIBILITY_CHANCE => 0.1;
 
+const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
 const my @PROPERTY_TYPES => (
     # Apartment
@@ -62,6 +64,7 @@ has peoples_phone_numbers => sub { shift->generate_peoples_phone_numbers };
 has employees => sub { shift->generate_employees };
 has properties => sub { shift->generate_properties };
 has properties_available_dates => sub { shift->generate_property_available_dates };
+has properties_accessibility => sub { shift->generate_property_accessibility };
 
 sub run {
     my ($self, @argv) = @_;
@@ -72,6 +75,7 @@ sub run {
     $self->employees;
     $self->properties;
     $self->properties_available_dates;
+    $self->properties_accessibility;
 }
 
 sub generate_people($self) {
@@ -322,6 +326,25 @@ sub generate_property_available_dates($self) {
     return \@property_availability;
 }
 
+sub generate_property_accessibility($self) {
+    my $db = $self->app->db;
+    my $properties = $self->properties;
+    print "Generating accessibility for properties...";
+
+    my @property_accessibility;
+    for my $property (values %$properties) {
+        for my $accessibility (_random_subset(\@ACCESSIBILITY_TYPES, PROPERTY_ACCESSIBILITY_CHANCE)) {
+            push @property_accessibility, {
+                property_id   => $property->{property_id},
+                accessibility => $accessibility,
+            }
+        }
+    }
+    $db->insert_all($PROPERTY_ACCESSIBILITY, \@property_accessibility);
+    say " done";
+    return \@property_accessibility;
+}
+
 sub _generate_person {
     my ($self, %defaults) = @_;
     state $password = $self->app->hash_password(HASH_TYPE, 'password');
@@ -358,6 +381,10 @@ sub _random_country {
 
 sub _random_element {
     @_[int(rand(scalar @_))]
+}
+
+sub _random_subset($set, $chance) {
+    grep { rand() < $chance } @$set
 }
 
 sub _random_person {
