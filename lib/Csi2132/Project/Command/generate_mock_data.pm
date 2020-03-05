@@ -191,9 +191,9 @@ sub generate_employees($self) {
     {
         my $tx = $db->begin;
         $db->query('SET CONSTRAINTS branch_manager_id_fkey DEFERRED');
-        $db->insert_all($BRANCH, [ values %$branches ]);
-        $db->insert_all($PERSON, [ values %$employees_person ]);
-        $db->insert_all($EMPLOYEE, [ values %$employees ]);
+        $db->insert_all($BRANCH, [ values %$branches ], { autocommit => 0 });
+        $db->insert_all($PERSON, [ values %$employees_person ], { autocommit => 0 });
+        $db->insert_all($EMPLOYEE, [ values %$employees ], { autocommit => 0 });
         $tx->commit;
     }
     say ' done.';

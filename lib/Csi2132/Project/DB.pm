@@ -27,12 +27,15 @@ sub insert {
 # values should be an arrayref of hashrefs.
 # Assumes that all rows have the same attributes.
 sub insert_all {
-    my ($self, $table, $values) = @_;
+    my ($self, $table, $values, $options) = @_;
     my @values = @$values;
+    $options //= {};
+    $options->{autocommit} //= 1;
     return unless @values;
     my @attributes = keys %{ $values[0] };
     my $attributes_str = join ',', map {quotemeta $_} @attributes;
     my $placeholders_for_one = '(' . substr(',?' x @attributes, 1) . ')';
+    my $tx = $self->begin if $options->{autocommit};
 
     while (@values) {
         my $row_count = min(int($POSTGRES_PLACEHOLDER_LIMIT / @attributes), scalar(@values));
@@ -42,6 +45,8 @@ sub insert_all {
         my @bind_values = map { @$_{@attributes} } @rows;
         $self->query("INSERT INTO $table ($attributes_str) VALUES $placeholders", @bind_values);
     }
+
+    $tx->commit if $options->{autocommit};
 }
 
 # This class method exports the relation names as constants into packages which
