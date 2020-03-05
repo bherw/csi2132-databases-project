@@ -2,6 +2,7 @@ package Csi2132::Project::Command::generate_mock_data;
 use Const::Fast;
 use Csi2132::Project::DB;
 use Data::Faker;
+use DateTime;
 use Text::Lorem;
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
@@ -285,6 +286,40 @@ sub generate_properties($self) {
     say " done.";
 
     return $properties;
+}
+
+sub generate_property_available_dates($self) {
+    my $db = $self->app->db;
+    my $properties = $self->properties;
+    print "Generating available dates for blocked properties...";
+
+    if ($db->query("SELECT 1 FROM $PROPERTY_AVAILABLE_DATE LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return;
+    }
+
+    my @property_availability;
+    for my $property (values %$properties) {
+        next unless !defined $property->{advance_booking_allowed_for_num_months};
+
+        my $available = 1;
+        my $date = DateTime->now();
+        for my $i (0 .. BLOCKED_PROPERTIES_GENERATE_DAYS) {
+            if (rand() < 0.5) {
+                $available = !$available;
+            }
+            if ($available) {
+                push @property_availability, {
+                    property_id    => $property->{property_id},
+                    available_date => $date->ymd('-'),
+                };
+            }
+            $date = $date->add(days => 1);
+        }
+    }
+    $db->insert_all($PROPERTY_AVAILABLE_DATE, \@property_availability);
+    say " done.";
+    return \@property_availability;
 }
 
 sub _generate_person {

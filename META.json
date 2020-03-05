@@ -32,6 +32,7 @@
          },
          "requires" : {
             "Const::Fast" : "0",
+            "DateTime" : "0",
             "Mojolicious" : "0",
             "Mojo::Pg" : "0",
             "Text::Lorem" : "0",
