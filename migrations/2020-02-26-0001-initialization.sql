@@ -235,9 +235,9 @@ CREATE TABLE "rental_agreement" (
   "rental_id" SERIAL PRIMARY KEY,
   "property_id" int NOT NULL,
   "person_id" int NOT NULL,
-  "signed_at" timestamp NOT NULL,
+  "signed_at" timestamp NOT NULL CHECK (signed_at <= starts_at),
   "starts_at" timestamp NOT NULL,
-  "ends_at" timestamp NOT NULL,
+  "ends_at" timestamp NOT NULL CHECK (ends_at >= starts_at),
   "payment_status" rental_agreement_payment_statuses,
   "total_price" numeric(12,2) NOT NULL,
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id"),
@@ -247,12 +247,13 @@ CREATE TABLE "rental_agreement" (
 CREATE TABLE "payment" (
   "rental_id" int NOT NULL,
   "created_at" timestamp NOT NULL,
-  "completed_at" timestamp,
+  "completed_at" timestamp CHECK (completed_at >= created_at),
   "type" payment_types NOT NULL,
   "amount" numeric(12,2) NOT NULL,
   "status" payment_statuses NOT NULL,
   PRIMARY KEY ("rental_id", "created_at"),
-  FOREIGN KEY ("rental_id") REFERENCES "rental_agreement" ("rental_id")
+  FOREIGN KEY ("rental_id") REFERENCES "rental_agreement" ("rental_id"),
+  CHECK (created_at >= completed_at)
 );
 
 CREATE TABLE "person_phone_number" (
