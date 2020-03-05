@@ -33,6 +33,7 @@ use constant BLOCKED_PROPERTIES_GENERATE_DAYS => 365;
 use constant PROPERTY_ACCESSIBILITY_CHANCE => 0.1;
 use constant PROPERTY_AMENITY_CHANCE => 0.50;
 use constant PROPERTY_HOST_LANGUAGE_CHANCE => 0.5;
+use constant PROPERTY_CUSTOM_HOUSE_RULE_CHANCE => 0.25;
 
 const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
@@ -70,6 +71,7 @@ has properties => sub { shift->generate_properties };
 has properties_available_dates => sub { shift->generate_property_available_dates };
 has properties_accessibility => sub { shift->generate_property_accessibility };
 has properties_amenity => sub { shift->generate_property_amenity };
+has properties_custom_house_rule => sub { shift->generate_property_custom_house_rule };
 has properties_host_language => sub { shift->generate_property_host_language };
 
 sub run {
@@ -83,6 +85,7 @@ sub run {
     $self->properties_available_dates;
     $self->properties_accessibility;
     $self->properties_amenity;
+    $self->properties_custom_house_rule;
     $self->properties_host_language;
 }
 
@@ -340,6 +343,31 @@ sub generate_property_accessibility($self) {
 
 sub generate_property_amenity($self) {
     return $self->generate_property_enum($PROPERTY_AMENITY, 'amenity', \@AMENITY_TYPES, PROPERTY_AMENITY_CHANCE);
+}
+
+sub generate_property_custom_house_rule($self) {
+    my $db = $self->app->db;
+    my $properties = $self->properties;
+    print "Generating custom house rules...";
+
+    if ($db->query("SELECT 1 FROM $PROPERTY_CUSTOM_HOUSE_RULE LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return;
+    }
+
+    my @property_custom_house_rules;
+    for my $property (values %$properties) {
+        while (rand() < PROPERTY_CUSTOM_HOUSE_RULE_CHANCE) {
+            push @property_custom_house_rules, {
+                property_id       => $property->{property_id},
+                custom_house_rule => $lorem->get_sentence(1),
+            };
+        }
+    }
+    $db->insert_all($PROPERTY_CUSTOM_HOUSE_RULE, \@property_custom_house_rules);
+    say " done.";
+    return \@property_custom_house_rules;
+
 }
 
 sub generate_property_host_language($self) {
