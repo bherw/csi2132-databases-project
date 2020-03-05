@@ -327,22 +327,31 @@ sub generate_property_available_dates($self) {
 }
 
 sub generate_property_accessibility($self) {
+    return $self->generate_property_enum($PROPERTY_ACCESSIBILITY, 'accessibility', \@PROPERTY_ACCESSIBILITY, PROPERTY_ACCESSIBILITY_CHANCE);
+}
+
+sub generate_property_enum($self, $table, $enum_name, $enum_values, $chance) {
     my $db = $self->app->db;
     my $properties = $self->properties;
-    print "Generating accessibility for properties...";
+    print "Generating $enum_name for properties...";
 
-    my @property_accessibility;
+    if ($db->query("SELECT 1 FROM $table LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return;
+    }
+
+    my @enum;
     for my $property (values %$properties) {
-        for my $accessibility (_random_subset(\@ACCESSIBILITY_TYPES, PROPERTY_ACCESSIBILITY_CHANCE)) {
-            push @property_accessibility, {
-                property_id   => $property->{property_id},
-                accessibility => $accessibility,
+        for my $value (_random_subset($enum_values, $chance)) {
+            push @enum, {
+                property_id => $property->{property_id},
+                $enum_name  => $value,
             }
         }
     }
-    $db->insert_all($PROPERTY_ACCESSIBILITY, \@property_accessibility);
+    $db->insert_all($table, \@enum);
     say " done";
-    return \@property_accessibility;
+    return \@enum;
 }
 
 sub _generate_person {
