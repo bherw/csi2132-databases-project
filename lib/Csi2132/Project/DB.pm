@@ -12,6 +12,7 @@ const our $POSTGRES_PLACEHOLDER_LIMIT => 65535;
 const our $PROPERTY => 'property';
 const our $PROPERTY_AVAILABLE_DATE => 'property_available_date';
 const our $PROPERTY_ACCESSIBILITY => 'property_accessibility';
+const our $PROPERTY_AMENITY => 'property_amenity';
 
 # This is basically just a less flexible version of the Mojo::Pg::Database->insert
 # method which it's overriding, but this course is about using SQL,
@@ -57,7 +58,7 @@ sub insert_all {
 sub import {
     my $caller = caller;
     for (qw(BRANCH EMPLOYEE PERSON PERSON_PHONE_NUMBER PROPERTY
-        PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY)) {
+        PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY PROPERTY_AMENITY)) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
     }
