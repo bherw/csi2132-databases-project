@@ -54,20 +54,33 @@ const my @ROOM_TYPES => ('Entire place', 'Private room', 'Hotel room', 'Shared r
 const my @CURRENCY_TYPES => ('CAD', 'USD');
 
 my $faker = Data::Faker->new;
+my $lorem = Text::Lorem->new;
+
+has people => sub { shift->generate_people };
+has peoples_phone_numbers => sub { shift->generate_peoples_phone_numbers };
+has employees => sub { shift->generate_employees };
+has properties => sub { shift->generate_properties };
+has properties_available_dates => sub { shift->generate_property_available_dates };
 
 sub run {
     my ($self, @argv) = @_;
-    my $db = $self->app->db;
-    my $lorem = Text::Lorem->new;
     STDOUT->autoflush(1);
 
-    my $people = $self->generate_people;
-    $self->generate_employees;
-    my $properties = $self->generate_properties;
+    $self->people;
+    $self->peoples_phone_numbers;
+    $self->employees;
+    $self->properties;
+    $self->properties_available_dates;
+}
 
 sub generate_people($self) {
     my $db = $self->app->db;
     print "Generating " . USER_COUNT . " users...";
+
+    if ($db->query("SELECT 1 FROM $PERSON LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return { map { ($_->{person_id} => $_) } @{ $db->query("SELECT * FROM $PERSON")->hashes } };
+    }
 
     # People
     my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT -1));
@@ -81,12 +94,21 @@ sub generate_people($self) {
     }
     $db->insert_all($PERSON, [ values %$people ]);
     print " done.\n";
+    return $people;
+}
 
-    # person_phone_number
+sub generate_peoples_phone_numbers($self) {
+    my $db = $self->app->db;
+    my $people = $self->people;
     print "Generating approximately " . (USER_COUNT * USER_AVERAGE_PHONE_NUMBERS) . " phone numbers...";
+
+    if ($db->query("SELECT 1 FROM $PERSON_PHONE_NUMBER LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return;
+    }
+
     my @phone_numbers;
     for my $id (1 .. USER_COUNT) {
-
         my $phone_count = int(rand(USER_AVERAGE_PHONE_NUMBERS)) + 1;
         $people->{$id}{phone_numbers} = [];
         for my $i (1 .. $phone_count) {
@@ -97,6 +119,7 @@ sub generate_people($self) {
     }
     $db->insert_all($PERSON_PHONE_NUMBER, \@phone_numbers);
     print " done.\n";
+    return \@phone_numbers;
 }
 
 sub generate_employees($self) {
@@ -108,6 +131,11 @@ sub generate_employees($self) {
     my $employees_person = {};
     my $employees = {};
     my $branches = {};
+
+    if ($db->query('SELECT 1 FROM employee LIMIT 1')->rows) {
+        say " already populated, skipping.";
+        return;
+    }
 
     my $ceo_id = $person_id++;
     $employees_person->{ceo} = $self->_generate_person(
@@ -169,10 +197,19 @@ sub generate_employees($self) {
         $tx->commit;
     }
     say ' done.';
+    return $employees;
 }
 
 sub generate_properties($self) {
+    my $db = $self->app->db;
+    my $people = $self->people;
     print "Generating @{[ PROPERTY_COUNT ]} properties...";
+
+    if ($db->query("SELECT 1 FROM $PROPERTY LIMIT 1")->rows) {
+        say " already populated, skipping.";
+        return { map { ($_->{property_id} => $_) } @{ $db->query("SELECT * FROM $PROPERTY")->hashes } };
+    }
+
     my $properties = {};
     for my $property_id (1 .. PROPERTY_COUNT) {
         my $owner = _random_person($people);
