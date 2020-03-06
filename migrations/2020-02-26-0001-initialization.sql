@@ -252,8 +252,7 @@ CREATE TABLE "payment" (
   "amount" numeric(12,2) NOT NULL,
   "status" payment_statuses NOT NULL,
   PRIMARY KEY ("rental_id", "created_at"),
-  FOREIGN KEY ("rental_id") REFERENCES "rental_agreement" ("rental_id"),
-  CHECK (created_at >= completed_at)
+  FOREIGN KEY ("rental_id") REFERENCES "rental_agreement" ("rental_id")
 );
 
 CREATE TABLE "person_phone_number" (
