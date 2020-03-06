@@ -61,6 +61,7 @@ CREATE TABLE "person" (
 
 CREATE TABLE "property" (
   "property_id" SERIAL PRIMARY KEY,
+  "host_id" int NOT NULL,
   "title" varchar NOT NULL DEFAULT 'Untitled Listing',
   "street_address" varchar NOT NULL DEFAULT '',
   "city" varchar NOT NULL DEFAULT '',
@@ -122,6 +123,7 @@ CREATE TABLE "property" (
   "weapons_on_property" text,
   "dangerous_animals_on_property" text,
 
+  FOREIGN KEY ("host_id") REFERENCES "person" ("person_id"),
   CONSTRAINT property_check_is_is_published CHECK (
     NOT is_published OR (
       "street_address" <> '' AND
