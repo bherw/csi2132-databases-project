@@ -238,7 +238,7 @@ CREATE TABLE "rental_agreement" (
   "signed_at" timestamp NOT NULL CHECK (signed_at <= starts_at),
   "starts_at" timestamp NOT NULL,
   "ends_at" timestamp NOT NULL CHECK (ends_at >= starts_at),
-  "payment_status" rental_agreement_payment_statuses,
+  "payment_status" rental_agreement_payment_statuses NOT NULL,
   "total_price" numeric(12,2) NOT NULL,
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id"),
   FOREIGN KEY ("person_id") REFERENCES "person" ("person_id")
