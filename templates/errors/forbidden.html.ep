@@ -1,0 +1,10 @@
+% layout 'default';
+% title 'Not authorized';
+
+<h1>Not authorized</h1>
+<p>
+    You do not have permission to view this page.
+    % if (!current_user) {
+        Perhaps you'd like to <%= link_to 'login' => url_for '/user/login' %>.
+    % }
+</p>

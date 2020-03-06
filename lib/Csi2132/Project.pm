@@ -2,7 +2,7 @@ package Csi2132::Project;
 use Carp qw(croak);
 use Digest::SHA qw(sha512_base64);
 use List::Util qw(sum);
-use Mojo::Base 'Mojolicious';
+use Mojo::Base 'Mojolicious', -signatures;
 use Mojo::Pg;
 use Mojo::Util qw(secure_compare);
 use Csi2132::Project::DB;
@@ -78,23 +78,35 @@ sub startup {
     my $r = $self->routes;
     $r->namespaces([ 'Csi2132::Project::Controller' ]);
 
+    $r->add_condition(user_access => sub($route, $c, $captures, $access_type) {
+        my $user = $c->current_user;
+        if (!$user || ref $access_type eq 'CODE' && !$access_type->($c, $user)) {
+            $c->render(status => 403, template => 'errors/forbidden');
+            return;
+        }
+
+        return 1;
+    });
+
     # Normal route to controller
     $r->get('/')->to('example#welcome');
 
     # Test Queries
-    $r->get('/test')->to('test_queries#index');
-    $r->get('/test/one')->to('test_queries#query_one');
-    $r->get('/test/two')->to('test_queries#query_two');
-    $r->get('/test/three')->to('test_queries#query_three');
-    $r->get('/test/four')->to('test_queries#query_four');
-    $r->get('/test/five')->to('test_queries#query_five');
-    $r->get('/test/six')->to('test_queries#query_six');
-    $r->get('/test/seven')->to('test_queries#query_seven');
-    $r->get('/test/eight')->to('test_queries#query_eight');
-    $r->get('/test/nine')->to('test_queries#query_nine');
-    $r->get('/test/ten')->to('test_queries#query_ten');
+    # TODO: replace with proper RBAC
+    my $test = $r->any('/test')->over(user_access => sub($c, $user) { $user->is_employee })->to('test_queries#');
+    $test->get('/')->to('#index');
+    $test->get('/one')->to('#query_one');
+    $test->get('/two')->to('#query_two');
+    $test->get('/three')->to('#query_three');
+    $test->get('/four')->to('#query_four');
+    $test->get('/five')->to('#query_five');
+    $test->get('/six')->to('#query_six');
+    $test->get('/seven')->to('#query_seven');
+    $test->get('/eight')->to('#query_eight');
+    $test->get('/nine')->to('#query_nine');
+    $test->get('/ten')->to('#query_ten');
 
-    $r->get('/user')->to('user#show');
+    $r->get('/user')->over(user_access => 'user/view self')->to('user#show');
     $r->get('/user/login')->to('user#login');
     $r->post('/user/login')->to('user#post_login');
     $r->get('/user/logout')->to('user#logout');
