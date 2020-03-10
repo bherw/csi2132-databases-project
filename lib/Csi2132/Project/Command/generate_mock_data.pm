@@ -247,6 +247,7 @@ sub generate_properties($self) {
 
         $properties->{$property_id} = {
             property_id                            => $property_id,
+            host_id                                => $owner->{person_id},
             title                                  => "$owner->{first_name}'s $property_type",
             street_address                         => $faker->street_address,
             city                                   => $faker->city,
