@@ -343,7 +343,7 @@ sub generate_property_available_dates($self) {
 }
 
 sub generate_property_accessibility($self) {
-    return $self->generate_property_enum($PROPERTY_ACCESSIBILITY, 'accessibility', \@PROPERTY_ACCESSIBILITY, PROPERTY_ACCESSIBILITY_CHANCE);
+    return $self->generate_property_enum($PROPERTY_ACCESSIBILITY, 'accessibility', \@ACCESSIBILITY_TYPES, PROPERTY_ACCESSIBILITY_CHANCE);
 }
 
 sub generate_property_amenity($self) {
