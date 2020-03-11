@@ -35,6 +35,9 @@ use constant PROPERTY_AMENITY_CHANCE => 0.50;
 use constant PROPERTY_HOST_LANGUAGE_CHANCE => 0.5;
 use constant PROPERTY_CUSTOM_HOUSE_RULE_CHANCE => 0.25;
 use constant PROPERTY_BEDROOMS_SPECIFIED_CHANCE => 0.5;
+use constant DAYS_OF_RENTAL_AGREEMENTS => 60;
+use constant SCHED_RENTAL_AGREEMENT_LAMBDA => 0.1;
+use constant SCHED_RENTAL_AGREEMENT_CHANCE => 0.5;
 
 const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
@@ -62,6 +65,8 @@ const my @CURRENCY_TYPES => ('CAD', 'USD');
 const my @AMENITY_TYPES => ('Essentials', 'Air conditioning', 'Heat', 'Hair dryer', 'Closet / drawers', 'Iron', 'TV', 'Fireplace', 'Private entrance', 'Shampoo', 'Wifi', 'Desk/workspace', 'Breakfast, coffee, tea', 'Fire extinguisher', 'Carbon monoxide detector', 'Smoke detector', 'First aid kit', 'Indoor fireplace', 'Hangers', 'Crib', 'High chair', 'Self check-in', 'Private bathroom', 'Beachfront', 'Waterfront', 'Ski-in/ski-out');
 const my @BED_TYPES => ('King', 'Queen', 'Double', 'Single');
 const my @HOST_LANGUAGES => ('English', 'German', 'French', 'Japanese');
+const my @RENTAL_AGREEMENT_PAYMENT_STATUSES => ('Pending', 'Payment ongoing', 'Complete');
+const my @PAYMENT_STATUSES => ('Pending', 'Approved', 'Complete');
 
 my $faker = Data::Faker->new;
 my $lorem = Text::Lorem->new;
@@ -76,6 +81,7 @@ has properties_amenity => sub { shift->generate_property_amenity };
 has properties_bedroom => sub { shift->generate_property_bedroom };
 has properties_custom_house_rule => sub { shift->generate_property_custom_house_rule };
 has properties_host_language => sub { shift->generate_property_host_language };
+has rental_agreement => sub { shift->generate_rental_agreement };
 
 sub run {
     my ($self, @argv) = @_;
@@ -91,6 +97,7 @@ sub run {
     $self->properties_bedroom;
     $self->properties_custom_house_rule;
     $self->properties_host_language;
+    $self->rental_agreement;
 }
 
 sub generate_people($self) {
@@ -439,6 +446,51 @@ sub generate_property_enum($self, $table, $enum_name, $enum_values, $chance) {
     return \@enum;
 }
 
+sub generate_rental_agreement($self) {
+    my $db = $self->app->db;
+    my $people = $self->people;
+    my $properties = $self->properties;
+    print "Generating rental agreements...";
+
+    my $rows = $db->query("SELECT * FROM $RENTAL_AGREEMENT LIMIT 1")->hashes;
+    if (@$rows) {
+        say " already populated, skipping.";
+        return $rows;
+    }
+
+    my @rental_agreements;
+    for my $property (values %$properties) {
+        # Blocked properties are hard to deal with correctly, just skip them.
+        next if !defined $property->{advance_booking_allowed_for_num_months};
+
+        my $date = DateTime->now->subtract(days => int(DAYS_OF_RENTAL_AGREEMENTS / 2));
+        my $stop_date = DateTime->now->add(days => int(DAYS_OF_RENTAL_AGREEMENTS / 2));
+        for (; $date <= $stop_date; $date->add(days => 1)) {
+            next unless rand() < SCHED_RENTAL_AGREEMENT_CHANCE;
+
+            my $renter = _random_element(grep { $_->{person_id} != $property->{host_id} } values %$people);
+            my $num_days = int(_random_exponential(SCHED_RENTAL_AGREEMENT_LAMBDA)) + 1;
+            (my $signed_at = $date->clone)->subtract(days => int(_random_exponential(0.1)) + 1);
+            (my $ends_at = $date->clone)->add(days => $num_days);
+            push @rental_agreements, {
+                property_id    => $property->{property_id},
+                person_id      => $renter->{person_id},
+                signed_at      => $signed_at->ymd('-'),
+                starts_at      => $date->ymd('-'),
+                ends_at        => $ends_at->ymd('-'),
+                payment_status => ($date <= DateTime->now ? 'Complete' : _random_element(@RENTAL_AGREEMENT_PAYMENT_STATUSES)),
+                total_price    => $num_days * $property->{base_price},
+            };
+
+            $date = $ends_at;
+        }
+    }
+    print " inserting " . scalar(@rental_agreements) . " records...";
+    $db->insert_all($RENTAL_AGREEMENT, \@rental_agreements);
+    say " done.";
+    return \@rental_agreements;
+}
+
 sub _generate_person {
     my ($self, %defaults) = @_;
     state $password = $self->app->hash_password(HASH_TYPE, 'password');
@@ -475,6 +527,10 @@ sub _random_country {
 
 sub _random_element {
     @_[int(rand(scalar @_))]
+}
+
+sub _random_exponential($lambda) {
+    (-1 / $lambda) * log(1 - rand())
 }
 
 sub _random_subset($set, $chance) {
