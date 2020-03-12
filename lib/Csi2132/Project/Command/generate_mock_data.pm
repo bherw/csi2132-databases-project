@@ -3,6 +3,7 @@ use Const::Fast;
 use Csi2132::Project::DB;
 use Data::Faker;
 use DateTime;
+use DateTime::Format::Pg;
 use List::Util qw(min max);
 use POSIX qw(DBL_MIN);
 use Text::Lorem;
@@ -71,6 +72,7 @@ const my @BED_TYPES => ('King', 'Queen', 'Double', 'Single');
 const my @HOST_LANGUAGES => ('English', 'German', 'French', 'Japanese');
 const my @RENTAL_AGREEMENT_PAYMENT_STATUSES => ('Pending', 'Payment ongoing', 'Complete');
 const my @PAYMENT_STATUSES => ('Pending', 'Approved', 'Complete');
+const my @PAYMENT_TYPES => ('Credit', 'Debit', 'Cash');
 
 my $faker = Data::Faker->new;
 my $lorem = Text::Lorem->new;
@@ -86,6 +88,7 @@ has properties_bedroom => sub { shift->generate_property_bedroom };
 has properties_custom_house_rule => sub { shift->generate_property_custom_house_rule };
 has properties_host_language => sub { shift->generate_property_host_language };
 has rental_agreement => sub { shift->generate_rental_agreement };
+has payment => sub { shift->generate_payment };
 
 sub run {
     my ($self, @argv) = @_;
@@ -102,6 +105,7 @@ sub run {
     $self->properties_custom_house_rule;
     $self->properties_host_language;
     $self->rental_agreement;
+    $self->payment;
 }
 
 sub generate_people($self) {
@@ -229,6 +233,54 @@ sub generate_employees($self) {
     }
     say ' done.';
     return $employees;
+}
+
+sub generate_payment($self) {
+    my $db = $self->app->db;
+    print "Generating payments...";
+
+    my $rows = $db->query("SELECT * FROM $PAYMENT")->hashes;
+    if (@$rows) {
+        say " already populated, skipping.";
+        return $rows;
+    }
+
+    my $people = $self->people;
+    my $properties = $self->properties;
+    my $rentals = $self->rental_agreement;
+    my @payments;
+    for my $rental (@$rentals) {
+        next if $rental->{payment_status} eq 'Pending';
+        my $property = $properties->{$rental->{property_id}};
+        my $starts_at = DateTime::Format::Pg->parse_datetime($rental->{starts_at});
+        my $ends_at = DateTime::Format::Pg->parse_datetime($rental->{ends_at});
+        my $payment_days = my $num_days = $starts_at->delta_days($ends_at)->in_units('days');
+        if ($rental->{payment_status} eq 'Payment pending') {
+            $payment_days = min $num_days, _random_exponential(0.5 / $payment_days) + 1;
+        }
+        my $payments = min $num_days, _random_exponential(0.5 / $payment_days) + 1;
+        my $per_day_price = $property->{base_price};
+        my $total_payment = $payment_days * $per_day_price;
+        my @property_payments;
+        for (1 .. $payments) {
+            my $created_at = $starts_at->clone->add(minutes => _random_exponential(0.001));
+            push @property_payments, {
+                rental_id  => $rental->{rental_id},
+                created_at => DateTime::Format::Pg->format_timestamp($created_at),
+                type       => _random_element(@PAYMENT_TYPES),
+                amount     => 0,
+                status     => $rental->{payment_status} eq 'Complete' ? 'Complete' : _random_element(@PAYMENT_STATUSES),
+            };
+        }
+        for (1 .. $payment_days) {
+            _random_element(@property_payments)->{amount} += $per_day_price;
+        }
+        push @payments, grep { $_->{amount} > 0 } @property_payments;
+    }
+    print " inserting " . scalar(@payments) . " records...";
+    $db->insert_all($PAYMENT, \@payments);
+    say "done.";
+    return \@payments;
 }
 
 sub generate_properties($self) {
