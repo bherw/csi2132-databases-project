@@ -144,7 +144,7 @@ sub generate_peoples_phone_numbers($self) {
         $people->{$id}{phone_numbers} = [];
         for my $i (1 .. $phone_count) {
             my $number = $faker->phone_number;
-            push @{$people->{$id}{phone_numbers}}, $number;
+            push @{ $people->{$id}{phone_numbers} }, $number;
             push @phone_numbers, { person_id => $id, phone_number => $number };
         }
     }
@@ -234,7 +234,7 @@ sub generate_employees($self) {
 sub generate_properties($self) {
     my $db = $self->app->db;
     my $people = $self->people;
-    print "Generating @{[ PROPERTY_COUNT ]} properties...";
+    print "Generating @{ [ PROPERTY_COUNT ] } properties...";
 
     if ($db->query("SELECT 1 FROM $PROPERTY LIMIT 1")->rows) {
         say " already populated, skipping.";
