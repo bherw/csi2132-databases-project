@@ -3,7 +3,10 @@ use Const::Fast;
 use Csi2132::Project::DB;
 use Data::Faker;
 use DateTime;
+use List::Util qw(min max);
+use POSIX qw(DBL_MIN);
 use Text::Lorem;
+
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
 use constant EMPLOYEE_COUNT => 1000;
@@ -22,8 +25,8 @@ use constant MIN_STAY_LONGER_THAN_ONE_CHANCE => 0.2;
 use constant MAX_MIN_STAY => 30;
 use constant MAX_STAY_LENGTH_GT_MIN_STAY_CHANCE => 0.8;
 use constant MAX_STAY_LENGTH => 365;
-use constant BASE_PRICE_MEAN => 60;
-use constant BASE_PRICE_SD => 30;
+use constant BASE_PRICE_MEAN => 60.0;
+use constant BASE_PRICE_SD => 30.0;
 use constant MAX_WEEKLY_DISCOUNT => 20;
 use constant MAX_MONTHLY_DISCOUNT => 20;
 use constant PROPERTY_DELETED_CHANCE => 0.05;
@@ -38,6 +41,7 @@ use constant PROPERTY_BEDROOMS_SPECIFIED_CHANCE => 0.5;
 use constant DAYS_OF_RENTAL_AGREEMENTS => 60;
 use constant SCHED_RENTAL_AGREEMENT_LAMBDA => 0.1;
 use constant SCHED_RENTAL_AGREEMENT_CHANCE => 0.5;
+use constant TWO_PI => 2.0 * 3.14159265358979323846;
 
 const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
@@ -248,9 +252,7 @@ sub generate_properties($self) {
         my $checkout_time_to = $checkout_time_from + int(rand(24 - $checkout_time_from));
         my $min_stay_length = 1 + (rand() < MIN_STAY_LONGER_THAN_ONE_CHANCE ? int(rand(MAX_MIN_STAY)) : 0);
         my $max_stay_length = $min_stay_length + (rand() < MAX_STAY_LENGTH_GT_MIN_STAY_CHANCE ? int(rand(MAX_STAY_LENGTH -$min_stay_length)) : 0);
-
-        # This calculation is wrong, but it could be fixed later. At least the constants are named properly.
-        my $base_price = BASE_PRICE_MEAN +(rand() > 0.5 ? -1 : 1) * BASE_PRICE_SD;
+        my $base_price = int(100 * max(1, _generate_gaussian_noise(BASE_PRICE_MEAN, BASE_PRICE_SD))) / 100;
 
         $properties->{$property_id} = {
             property_id                            => $property_id,
@@ -541,6 +543,30 @@ sub _random_person {
     my $people = shift;
     my @ids = keys %$people;
     return $people->{@ids[int(rand(scalar @ids))]};
+}
+
+# Translated from the C++ implementation at
+# https://en.wikipedia.org/wiki/Box-Muller_transform
+my $z1 = 0.0;
+my $generate = 0;
+sub _generate_gaussian_noise($mu, $sigma) {
+
+    $generate = !$generate;
+
+    return $z1 * $sigma + $mu unless $generate;
+
+    my ($u1, $u2) = (0.0, 0.0);
+    do
+    {
+        $u1 = rand();
+        $u2 = rand();
+    } while ($u1 <= DBL_MIN);
+
+    my $z0;
+    $z0 = sqrt(-2.0 * log($u1)) * cos(TWO_PI * $u2);
+    $z1 = sqrt(-2.0 * log($u1)) * sin(TWO_PI * $u2);
+
+    return $z0 * $sigma + $mu;
 }
 
 1;
