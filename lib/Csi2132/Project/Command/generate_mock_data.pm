@@ -454,13 +454,14 @@ sub generate_rental_agreement($self) {
     my $properties = $self->properties;
     print "Generating rental agreements...";
 
-    my $rows = $db->query("SELECT * FROM $RENTAL_AGREEMENT LIMIT 1")->hashes;
+    my $rows = $db->query("SELECT * FROM $RENTAL_AGREEMENT")->hashes;
     if (@$rows) {
         say " already populated, skipping.";
         return $rows;
     }
 
     my @rental_agreements;
+    my $rental_id = 0;
     for my $property (values %$properties) {
         # Blocked properties are hard to deal with correctly, just skip them.
         next if !defined $property->{advance_booking_allowed_for_num_months};
@@ -475,6 +476,7 @@ sub generate_rental_agreement($self) {
             (my $signed_at = $date->clone)->subtract(days => int(_random_exponential(0.1)) + 1);
             (my $ends_at = $date->clone)->add(days => $num_days);
             push @rental_agreements, {
+                rental_id      => $rental_id++,
                 property_id    => $property->{property_id},
                 person_id      => $renter->{person_id},
                 signed_at      => $signed_at->ymd('-'),
