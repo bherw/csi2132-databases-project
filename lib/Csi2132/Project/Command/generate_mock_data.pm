@@ -9,9 +9,9 @@ use Text::Lorem;
 
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
-use constant EMPLOYEE_COUNT => 1000;
-use constant PROPERTY_COUNT => 1000;
-use constant USER_COUNT => 1000;
+use constant EMPLOYEE_COUNT => 100;
+use constant PROPERTY_COUNT => 100;
+use constant USER_COUNT => 100;
 use constant USER_DELETED_CHANCE => 0.05;
 use constant USER_AVERAGE_PHONE_NUMBERS => 1.5;
 use constant HASH_TYPE => 'sha512_base64';
