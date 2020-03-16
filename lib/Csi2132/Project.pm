@@ -49,6 +49,18 @@ sub startup {
         $current_user
     });
 
+    $self->helper(add_error => sub($self, $error) {
+        my $errors = $self->flash('errors') // do {
+            $self->flash(errors => (my $e = []));
+            $e
+        };
+        if (my $old_error = $self->flash('error')) {
+            $self->flash(error => undef);
+            push @$errors, $old_error;
+        }
+        push @$errors, $error;
+    });
+
     # Commands
     push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
 
