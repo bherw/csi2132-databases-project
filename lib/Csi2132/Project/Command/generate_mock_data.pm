@@ -382,6 +382,7 @@ sub generate_property_available_dates($self) {
 
     my @property_availability;
     for my $property (values %$properties) {
+        next if $property->{is_deleted};
         next unless !defined $property->{advance_booking_allowed_for_num_months};
 
         my $available = 1;
@@ -521,6 +522,11 @@ sub generate_rental_agreement($self) {
 
         my $date = DateTime->now->subtract(days => int(DAYS_OF_RENTAL_AGREEMENTS / 2));
         my $stop_date = DateTime->now->add(days => int(DAYS_OF_RENTAL_AGREEMENTS / 2));
+
+        if ($property->{is_deleted}) {
+            $stop_date = DateTime->now;
+        }
+
         for (; $date <= $stop_date; $date->add(days => 1)) {
             next unless rand() < SCHED_RENTAL_AGREEMENT_CHANCE;
 
