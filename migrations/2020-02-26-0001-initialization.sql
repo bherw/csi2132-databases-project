@@ -139,7 +139,8 @@ CREATE TABLE "property" (
       "min_price" IS NOT NULL AND
       "max_price" IS NOT NULL AND
       "currency" IS NOT NULL AND
-      "checkout_time_to" IS NOT NULL
+      "checkout_time_to" IS NOT NULL AND
+      NOT "is_deleted"
     )
   ),
   CONSTRAINT property_check_checkin_time_gt CHECK (NOT is_published OR "checkin_time_from" <= "checkin_time_to"),

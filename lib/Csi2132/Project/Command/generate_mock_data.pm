@@ -305,6 +305,7 @@ sub generate_properties($self) {
         my $min_stay_length = 1 + (rand() < MIN_STAY_LONGER_THAN_ONE_CHANCE ? int(rand(MAX_MIN_STAY)) : 0);
         my $max_stay_length = $min_stay_length + (rand() < MAX_STAY_LENGTH_GT_MIN_STAY_CHANCE ? int(rand(MAX_STAY_LENGTH -$min_stay_length)) : 0);
         my $base_price = int(100 * max(1, _generate_gaussian_noise(BASE_PRICE_MEAN, BASE_PRICE_SD))) / 100;
+        my $is_published = 0 + (rand() < PROPERTY_PUBLISHED_CHANCE);
 
         $properties->{$property_id} = {
             property_id                            => $property_id,
@@ -315,7 +316,7 @@ sub generate_properties($self) {
             state                                  => $faker->us_state,
             country                                => $owner->{country},
             postal_code                            => $faker->us_zip_code,
-            is_published                           => rand() < PROPERTY_PUBLISHED_CHANCE ? 1 : 0,
+            is_published                           => $is_published,
             is_dedicated_guest_space               => rand() < 0.5 ? 1 : 0,
             is_instant_book_enabled                => rand() < 0.5 ? 1 : 0,
             property_type                          => $property_type,
@@ -346,7 +347,7 @@ sub generate_properties($self) {
             currency                               => _random_element(@CURRENCY_TYPES),
             weekly_discount                        => int(rand(MAX_WEEKLY_DISCOUNT)),
             monthly_discount                       => int(rand(MAX_MONTHLY_DISCOUNT)),
-            is_deleted                             => rand() < PROPERTY_DELETED_CHANCE ? 1 : 0,
+            is_deleted                             => 0 + (!$is_published && rand() < PROPERTY_DELETED_CHANCE),
             is_suitable_for_children               => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
             is_suitable_for_infants                => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
             is_suitable_for_pets                   => rand() < 0.5 ? (rand() < 0.5 ? 1 : 0) : undef,
