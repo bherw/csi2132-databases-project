@@ -61,6 +61,10 @@ sub startup {
         push @$errors, $error;
     });
 
+    $self->validator->add_check(email_is_unique => sub($v, $name, $value, @args) {
+        return !!$self->people->load_by_email($value);
+    });
+
     # Commands
     push @{$self->commands->namespaces}, 'Csi2132::Project::Command';
 
@@ -121,6 +125,8 @@ sub startup {
     $r->get('/user/login')->to('user#login');
     $r->post('/user/login')->to('user#post_login');
     $r->get('/user/logout')->to('user#logout');
+    $r->get('/user/register')->to('user#register');
+    $r->post('/user/register')->to('user#post_register');
 }
 
 sub _hash_password {

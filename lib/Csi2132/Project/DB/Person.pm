@@ -3,6 +3,7 @@ use Mojo::Base -base, -signatures;
 use Csi2132::Project::DB;
 use Csi2132::Project::Model::Person;
 use Csi2132::Project::Model::Employee;
+use Try::Tiny;
 
 has 'pg';
 has 'person_class' => 'Csi2132::Project::Model::Person';
@@ -16,6 +17,20 @@ sub load_by_email($self, $email) {
 sub load_by_id($self, $id) {
     my $attrs = $self->pg->db->query("SELECT * FROM $PERSON LEFT JOIN $EMPLOYEE USING (person_id) WHERE person_id=?", $id)->hash;
     return $self->_inflate($attrs);
+}
+
+sub register($self, $attrs) {
+    $attrs->{person_id} = int(rand(2**31));
+    try {
+        $self->pg->db->insert($PERSON, $attrs);
+    } catch {
+        my $e = shift;
+        if ($e =~ /duplicate key value violates unique constraint "person_pkey"/) {
+            return $self->register($attrs);
+        }
+        die $e;
+    };
+    return $self->load_by_email($attrs->{email});
 }
 
 sub _inflate($self, $attrs) {

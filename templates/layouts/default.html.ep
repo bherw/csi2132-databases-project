@@ -28,6 +28,7 @@
           <li><%= link_to 'Logout' => '/user/logout' %></li>
         % } else {
           <li><%= link_to 'Login' => '/user/login' %></li>
+          <li><%= link_to 'Register' => '/user/register' %></li>
         % }
         </ul>
       </div>

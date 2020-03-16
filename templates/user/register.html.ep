@@ -1,0 +1,64 @@
+% layout 'default';
+% title 'Register';
+
+<div class="row">
+  <h1>Register</h1>
+  %= form_for '/user/register' => (method => 'POST', class => 's6 col') => begin
+  %= csrf_field
+  <div class="row">
+      <div class="input-field col s4">
+        %= text_field 'first_name'
+        %= label_for first_name => 'First name'
+        % if (my $e = validation->error('first_name')) {
+          <p>
+            Value is required.
+          </p>
+        % }
+      </div>
+      <div class="input-field col s4">
+        %= text_field 'middle_name'
+        %= label_for middle_name => 'Middle name'
+      </div>
+      <div class="input-field col s4">
+        %= text_field 'last_name'
+        %= label_for last_name => 'Last name'
+        % if (my $e = validation->error('last_name')) {
+          <p>
+            Value is required.
+          </p>
+        % }
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        %= text_field 'email'
+        %= label_for email => 'Email'
+        % if (my $e = validation->error('email')) {
+        <p>
+          %= 'Value is required.' if $e->[0] eq 'required'
+          %= 'Another user with that email already exists' if $e->[0] eq 'email_is_unique'
+        </p>
+        % }
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        %= password_field 'password'
+        %= label_for password => 'Password'
+        % if (my $e = validation->error('password')) {
+        <p>
+          %= 'Value is required.' if $e->[0] eq 'required'
+          %= 'Passwords must be equal' if $e->[0] eq 'equal_to'
+        </p>
+        % }
+      </div>
+      <div class="input-field col s12">
+        %= password_field 'password2'
+        %= label_for password2 => 'Password (again)'
+      </div>
+    </div>
+    <div class="row">
+      %= submit_button 'Register', class => 'waves-effect waves-light btn'
+    </div>
+  %= end
+</div>

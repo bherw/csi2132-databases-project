@@ -1,5 +1,5 @@
 package Csi2132::Project::Controller::User;
-use Mojo::Base 'Mojolicious::Controller', -signatures;
+use Mojo::Base 'Csi2132::Project::Controller', -signatures;
 
 sub post_login($self) {
     my $email = $self->param('email');
@@ -25,6 +25,29 @@ sub post_login($self) {
 
     $self->flash(error => 'Invalid email or password');
     $self->redirect_to('/user/login');
+}
+
+sub post_register($self) {
+    my $v = $self->validation;
+
+    $v->csrf_protect;
+    $v->required('first_name');
+    $v->required('last_name');
+    $v->required('email')->email_is_unique;
+    $v->required('password')->equal_to('password2');
+
+    return $self->render('user/register') if $v->has_error;
+
+    my $params = $self->params_hash($v->passed);
+
+    $params->{middle_name} = $self->param('middle_name') // '';
+    $params->{password_type} = Csi2132::Project::DEFAULT_PASSWORD_TYPE;
+    $params->{password} = $self->hash_password(Csi2132::Project::DEFAULT_PASSWORD_TYPE, $params->{password});
+
+    my $person = $self->people->register($params);
+    $self->session(person_id => $person->{person_id});
+    $self->flash(message => 'Registered');
+    $self->redirect_to('/');
 }
 
 sub logout($self) {

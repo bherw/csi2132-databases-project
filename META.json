@@ -37,6 +37,7 @@
             "Mojolicious" : "0",
             "Mojo::Pg" : "0",
             "Text::Lorem" : "0",
+            "Try::Tiny" : "0",
             "perl" : "5.020000"
          }
       },
