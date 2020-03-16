@@ -71,8 +71,7 @@ sub startup {
         ->sort
         ->map(sub {shift->slurp})
         ->join("\n");
-    $pg->auto_migrate(1)->migrations->name('project')->from_string($migrations_sql);
-    $pg->db;
+    $pg->migrations->name('project')->from_string($migrations_sql);
 
     # Router
     my $r = $self->routes;
