@@ -32,7 +32,7 @@ use constant MAX_WEEKLY_DISCOUNT => 20;
 use constant MAX_MONTHLY_DISCOUNT => 20;
 use constant PROPERTY_DELETED_CHANCE => 0.5;
 use constant PROPERTY_PUBLISHED_CHANCE => 0.90;
-use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.2;
+use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.95;
 use constant BLOCKED_PROPERTIES_GENERATE_DAYS => 365;
 use constant PROPERTY_ACCESSIBILITY_CHANCE => 0.1;
 use constant PROPERTY_AMENITY_CHANCE => 0.50;
@@ -263,7 +263,7 @@ sub generate_payment($self) {
         my $total_payment = $payment_days * $per_day_price;
         my @property_payments;
         for (1 .. $payments) {
-            my $created_at = $starts_at->clone->add(minutes => _random_exponential(0.001));
+            my $created_at = $starts_at->clone->add(seconds => _random_exponential(0.00001));
             push @property_payments, {
                 rental_id  => $rental->{rental_id},
                 created_at => DateTime::Format::Pg->format_timestamp($created_at),
@@ -338,7 +338,7 @@ sub generate_properties($self) {
             getting_around                         => $lorem->paragraphs(int(rand(1)) + 1),
             days_of_notice_required                => int(rand(MAX_DAYS_OF_NOTICE_REQUIRED)),
             sameday_booking_allowed_before_time    => rand() < SAMEDAY_BOOKING_CHANCE ? sprintf('%02d:00', int(rand(24))) : undef,
-            advance_booking_allowed_for_num_months => rand() < ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE ? undef : int(rand(MAX_ADVANCE_BOOKING)),
+            advance_booking_allowed_for_num_months => rand() > ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE ? undef : int(rand(MAX_ADVANCE_BOOKING)),
             min_stay_length                        => $min_stay_length,
             max_stay_length                        => $max_stay_length,
             base_price                             => $base_price,
