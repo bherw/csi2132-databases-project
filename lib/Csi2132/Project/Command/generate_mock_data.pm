@@ -43,6 +43,7 @@ use constant DAYS_OF_RENTAL_AGREEMENTS => 60;
 use constant SCHED_RENTAL_AGREEMENT_LAMBDA => 0.1;
 use constant SCHED_RENTAL_AGREEMENT_CHANCE => 0.5;
 use constant TWO_PI => 2.0 * 3.14159265358979323846;
+use constant REVIEW_CHANCE => 0.95;
 
 const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
 const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
@@ -80,6 +81,7 @@ my $lorem = Text::Lorem->new;
 has people => sub { shift->generate_people };
 has peoples_phone_numbers => sub { shift->generate_peoples_phone_numbers };
 has employees => sub { shift->generate_employees };
+has payment => sub { shift->generate_payment };
 has properties => sub { shift->generate_properties };
 has properties_available_dates => sub { shift->generate_property_available_dates };
 has properties_accessibility => sub { shift->generate_property_accessibility };
@@ -88,7 +90,7 @@ has properties_bedroom => sub { shift->generate_property_bedroom };
 has properties_custom_house_rule => sub { shift->generate_property_custom_house_rule };
 has properties_host_language => sub { shift->generate_property_host_language };
 has rental_agreement => sub { shift->generate_rental_agreement };
-has payment => sub { shift->generate_payment };
+has reviews => sub { shift->generate_reviews };
 
 sub run {
     my ($self, @argv) = @_;
@@ -106,6 +108,7 @@ sub run {
     $self->properties_host_language;
     $self->rental_agreement;
     $self->payment;
+    $self->reviews;
 }
 
 sub generate_people($self) {
@@ -552,6 +555,46 @@ sub generate_rental_agreement($self) {
     $db->insert_all($RENTAL_AGREEMENT, \@rental_agreements);
     say " done.";
     return \@rental_agreements;
+}
+
+sub generate_reviews($self) {
+    my $db = $self->app->db;
+
+    print 'Generating reviews...';
+
+    my $rows = $db->query("SELECT * FROM reviews")->hashes;
+    if (@$rows) {
+        say ' already populated, skipping.';
+        return $rows;
+    }
+
+    my %reviews;
+    my @reviews;
+    my $now = DateTime->now;
+    my $rental_agreements = $self->rental_agreement;
+    for my $rental (@$rental_agreements) {
+        next unless DateTime::Format::Pg->parse_datetime($rental->{ends_at}) <= $now;
+        next unless rand() < REVIEW_CHANCE;
+        next if exists $reviews{$rental->{person_id}}->{$rental->{property_id}};
+
+        push @reviews, $reviews{$rental->{person_id}}->{$rental->{property_id}} = {
+            property_id   => $rental->{property_id},
+            person_id     => $rental->{person_id},
+            location      => int(rand(5) + 1),
+            communication => int(rand(5) + 1),
+            check_in      => int(rand(5) + 1),
+            accuracy      => int(rand(5) + 1),
+            cleanliness   => int(rand(5) + 1),
+            value         => int(rand(5) + 1),
+            comments      => $lorem->get_paragraph(1),
+        };
+    }
+
+    print " inserting @{[ scalar @reviews ]} rows...";
+    $db->insert_all($REVIEWS, \@reviews);
+
+    say ' done.';
+    return \@reviews;
 }
 
 sub _generate_person {

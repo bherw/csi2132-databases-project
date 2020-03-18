@@ -17,6 +17,7 @@ const our $PROPERTY_BEDROOM => 'property_bedroom';
 const our $PROPERTY_CUSTOM_HOUSE_RULE => 'property_custom_house_rule';
 const our $PROPERTY_HOST_LANGUAGE => 'property_host_language';
 const our $RENTAL_AGREEMENT => 'rental_agreement';
+const our $REVIEWS => 'reviews';
 const our $PAYMENT => 'payment';
 
 # This is basically just a less flexible version of the Mojo::Pg::Database->insert
@@ -65,7 +66,7 @@ sub import {
     for (qw(BRANCH EMPLOYEE PAYMENT PERSON PERSON_PHONE_NUMBER PROPERTY
         PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY PROPERTY_AMENITY
         PROPERTY_BEDROOM PROPERTY_CUSTOM_HOUSE_RULE PROPERTY_HOST_LANGUAGE
-        RENTAL_AGREEMENT
+        RENTAL_AGREEMENT REVIEWS
     )) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
