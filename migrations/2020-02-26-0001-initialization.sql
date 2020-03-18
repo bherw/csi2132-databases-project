@@ -123,6 +123,15 @@ CREATE TABLE "property" (
   "weapons_on_property" text,
   "dangerous_animals_on_property" text,
 
+  -- Cached rating values
+  location float,
+  communication float,
+  accuracy float,
+  check_in float,
+  cleanliness float,
+  "value" float,
+  rating float,
+
   FOREIGN KEY ("host_id") REFERENCES "person" ("person_id"),
   CONSTRAINT property_check_is_is_published CHECK (
     NOT is_published OR (
@@ -234,6 +243,67 @@ CREATE TABLE "reviews" (
   FOREIGN KEY ("person_id") REFERENCES "person" ("person_id")
 );
 
+CREATE FUNCTION insert_property_review_scores()
+RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM update_property_review_scores_internal(NEW.property_id);
+    RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION update_property_review_scores()
+RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM update_property_review_scores_internal(OLD.property_id);
+    RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION update_property_review_scores_internal(review_property_id int)
+RETURNS void
+LANGUAGE plpgsql AS $$
+DECLARE
+    avg_location float;
+    avg_communication float;
+    avg_accuracy float;
+    avg_check_in float;
+    avg_cleanliness float;
+    avg_value float;
+BEGIN
+    SELECT AVG(reviews.location), AVG(reviews.communication), AVG(reviews.check_in), AVG(reviews.accuracy), AVG(reviews.cleanliness), AVG(reviews."value")
+           INTO avg_location, avg_communication, avg_check_in, avg_accuracy, avg_cleanliness, avg_value
+           FROM reviews
+           WHERE reviews.property_id = review_property_id;
+    UPDATE property SET
+        location      = avg_location,
+        communication = avg_communication,
+        check_in      = avg_check_in,
+        accuracy      = avg_accuracy,
+        cleanliness   = avg_cleanliness,
+        "value"       = avg_value,
+        rating        = (avg_location + avg_communication + avg_check_in + avg_accuracy + avg_cleanliness + avg_value) / 6
+        WHERE "property_id" = review_property_id;
+END;
+$$;
+
+CREATE TRIGGER reviews_on_update
+    AFTER INSERT ON reviews
+    FOR EACH ROW
+    EXECUTE PROCEDURE insert_property_review_scores();
+
+CREATE TRIGGER reviews_update
+    AFTER UPDATE OF location, communication, check_in, accuracy, cleanliness, "value" ON reviews
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_property_review_scores();
+
+CREATE TRIGGER reviews_on_delete
+    AFTER DELETE ON reviews
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_property_review_scores();
+
+
 CREATE TABLE "rental_agreement" (
   "rental_id" SERIAL PRIMARY KEY,
   "property_id" int NOT NULL,
@@ -301,6 +371,10 @@ DROP TABLE IF EXISTS "message" CASCADE;
 DROP TABLE IF EXISTS "reviews" CASCADE;
 DROP TABLE IF EXISTS "rental_agreement" CASCADE;
 DROP TABLE IF EXISTS "payment" CASCADE;
+
+DROP FUNCTION insert_property_review_scores;
+DROP FUNCTION update_property_review_scores;
+DROP FUNCTION update_property_review_scores_internal;
 
 DROP TYPE IF EXISTS property_types;
 DROP TYPE IF EXISTS room_types;
