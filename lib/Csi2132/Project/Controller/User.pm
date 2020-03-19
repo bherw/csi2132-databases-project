@@ -38,7 +38,7 @@ sub post_register($self) {
 
     return $self->render('user/register') if $v->has_error;
 
-    my $params = $self->params_hash($v->passed);
+    my $params = $self->params_hash(@{ $v->passed });
 
     $params->{middle_name} = $self->param('middle_name') // '';
     $params->{password_type} = Csi2132::Project::DEFAULT_PASSWORD_TYPE;
