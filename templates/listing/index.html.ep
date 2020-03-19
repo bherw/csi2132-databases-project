@@ -1,0 +1,27 @@
+% layout 'default';
+% title 'Listings';
+
+%= form_for '/listing' => (class => 'row') => begin
+    <div class="input-field col s4">
+        %= text_field 'city'
+        %= label_for city => 'City'
+    </div>
+    <div class="input-field col s4">
+        %= date_field 'date', value => DateTime->now->ymd('-')
+        %= label_for date => 'Available date'
+    </div>
+    <div class="input-field col s4">
+        %= submit_button 'Search', class => 'waves-effect waves-light btn'
+    </div>
+%= end
+
+<table>
+    <tr><th>Property</th><th>City</th><th>Daily price</th></tr>
+    % for my $listing (@$listings) {
+        %= tag tr => begin
+            %= t td => link_to $listing->{title} => url_for('/listing/' . $listing->{property_id})
+            %= t td => $listing->{city}
+            %= t td => '$' . $listing->{base_price}
+        %= end
+    % }
+</table>

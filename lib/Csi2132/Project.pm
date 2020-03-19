@@ -121,6 +121,10 @@ sub startup {
     $test->get('/nine')->to('#query_nine');
     $test->get('/ten')->to('#query_ten');
 
+    # Listings
+    $r->get('/listing')->to('listing#index');
+
+    # Users
     $r->get('/user')->over(user_access => 'user/view self')->to('user#show');
     $r->get('/user/login')->to('user#login');
     $r->post('/user/login')->to('user#post_login');
