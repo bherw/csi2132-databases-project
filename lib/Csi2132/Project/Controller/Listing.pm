@@ -5,28 +5,31 @@ use DateTime::Format::Pg;
 use Mojo::Base 'Csi2132::Project::Controller', -signatures;
 
 sub index($self) {
-    my $for_date = DateTime->now;
+    if ($self->param('from_date')) {
+        my $v = $self->validation;
+        $v->required('from_date')->date;
+        $v->required('to_date')->date->gte('from_date');
 
-    if (my $specified_date = $self->param('date')) {
-        if ($specified_date =~ /^\d{4,}-\d{2}-\d{2}$/) {
-            $for_date = DateTime::Format::Pg->parse_datetime($specified_date);
-        }
-        else {
-            $self->stash('errors' => ['Invalid date. Expected YYYY-MM-DD']);
-        }
+        return $self->stash(listings => []) unless $v->is_valid;
     }
 
+    my $from_date = $self->param('from_date') || DateTime->now->ymd('-');
+    my $to_date = $self->param('to_date') || $from_date;
     my $city = $self->param('city');
-    my $where_city = $city ? " AND city = ? " : '';
+    my $where_city = $city ? ' AND city = $3 ' : '';
 
     my $listings = $self->db->query(qq{
         SELECT property_id, title, base_price, city
-        FROM $PROPERTY
+        FROM $PROPERTY P
         WHERE property_id NOT IN (
-            SELECT property_id FROM $RENTAL_AGREEMENT WHERE ? BETWEEN starts_at AND ends_at
+            SELECT property_id FROM $RENTAL_AGREEMENT WHERE \$1 BETWEEN starts_at AND ends_at
         )
+        AND NOT EXISTS (
+            SELECT 1 FROM $RENTAL_AGREEMENT R
+            WHERE R.property_id=P.property_id
+            AND starts_at BETWEEN \$1 AND \$2)
         $where_city
-        }, $for_date->ymd('-'), ($city ? $city : ()))->hashes;
+        }, $from_date, $to_date, ($city ? $city : ()))->hashes;
 
     $self->stash(listings => $listings);
 }

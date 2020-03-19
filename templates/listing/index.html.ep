@@ -2,15 +2,21 @@
 % title 'Listings';
 
 %= form_for '/listing' => (class => 'row') => begin
-    <div class="input-field col s4">
+    <div class="input-field col s3">
         %= text_field 'city'
         %= label_for city => 'City'
     </div>
-    <div class="input-field col s4">
-        %= date_field 'date', value => DateTime->now->ymd('-')
-        %= label_for date => 'Available date'
+    <div class="input-field col s3">
+        %= date_field 'from_date', value => DateTime->now->ymd('-')
+        %= label_for from_date => 'Available from'
+        %= errors_for 'from_date'
     </div>
-    <div class="input-field col s4">
+    <div class="input-field col s3">
+        %= date_field 'to_date', value => DateTime->now->ymd('-')
+        %= label_for to_date => 'To'
+        %= errors_for to_date => (gte => 'Must be greater than or equal to the from date.')
+    </div>
+    <div class="input-field col s3">
         %= submit_button 'Search', class => 'waves-effect waves-light btn'
     </div>
 %= end

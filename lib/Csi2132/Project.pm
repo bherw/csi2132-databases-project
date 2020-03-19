@@ -61,8 +61,25 @@ sub startup {
         push @$errors, $error;
     });
 
-    $self->validator->add_check(email_is_unique => sub($v, $name, $value, @args) {
+    $self->helper(errors_for => sub($self, $name, %errors) {
+        my $e = $self->helpers->validation->error($name);
+        return unless $e;
+        $errors{required} //= 'This field is required';
+        return $self->helpers->tag(p => (class => 'form-error') => $errors{$e->[0]});
+    });
+
+    my $v = $self->validator;
+    $v->add_check(email_is_unique => sub($v, $name, $value) {
         return !!$self->people->load_by_email($value);
+    });
+
+    $v->add_check(date => sub($v, $name, $value) {
+        return $value !~ /^\d{4,}-\d{2}-\d{2}$/;
+    });
+
+    $v->add_check(gte => sub($v, $name, $value, $to) {
+        return 1 unless defined(my $other = $v->input->{$to});
+        return $value lt $other;
     });
 
     # Commands

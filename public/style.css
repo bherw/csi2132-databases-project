@@ -1,3 +1,13 @@
 .logo {
     font-size: 2rem;
 }
+
+.form-error {
+    font-size: small;
+    color: red;
+    margin-top: 0;
+}
+
+input.field-with-error {
+    border-bottom: 2px solid red !important;
+}
