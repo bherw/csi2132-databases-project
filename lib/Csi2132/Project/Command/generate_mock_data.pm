@@ -1,6 +1,7 @@
 package Csi2132::Project::Command::generate_mock_data;
 use Const::Fast;
 use Csi2132::Project::DB;
+use Data::GUID qw(guid);
 use Data::Faker;
 use DateTime;
 use DateTime::Format::Pg;
@@ -124,10 +125,11 @@ sub generate_people($self) {
     my @user_emails = ('test@user.com', $self->_generate_unique_emails(USER_COUNT -1));
 
     my $people = {};
-    for my $id (1 .. USER_COUNT) {
+    for (1 .. USER_COUNT) {
+        my $id = guid;
         $people->{$id} = $self->_generate_person(
             person_id => $id,
-            email     => shift @user_emails,
+            email     => shift @user_emails
         );
     }
     $db->insert_all($PERSON, [ values %$people ]);
@@ -146,7 +148,7 @@ sub generate_peoples_phone_numbers($self) {
     }
 
     my @phone_numbers;
-    for my $id (1 .. USER_COUNT) {
+    for my $id (keys %$people) {
         my $phone_count = int(rand(USER_AVERAGE_PHONE_NUMBERS)) + 1;
         $people->{$id}{phone_numbers} = [];
         for my $i (1 .. $phone_count) {
@@ -165,7 +167,6 @@ sub generate_employees($self) {
 
     # Branches with managers
     print "Generating " . EMPLOYEE_COUNT . " employees for " . scalar(@COUNTRIES) . ' countries...';
-    my $person_id = USER_COUNT +1;
     my $employees_person = {};
     my $employees = {};
     my $branches = {};
@@ -175,7 +176,7 @@ sub generate_employees($self) {
         return;
     }
 
-    my $ceo_id = $person_id++;
+    my $ceo_id = guid;
     $employees_person->{ceo} = $self->_generate_person(
         person_id => $ceo_id,
         email     => 'ceo@nisebnb.com',
@@ -191,7 +192,7 @@ sub generate_employees($self) {
 
     # Branches and managers
     for my $country (@COUNTRIES) {
-        my $manager_id = $person_id++;
+        my $manager_id = guid;
         $branches->{$country} = {
             country    => $country,
             manager_id => $manager_id
@@ -211,7 +212,7 @@ sub generate_employees($self) {
 
     # Employees
     for (1 .. EMPLOYEE_COUNT) {
-        my $employee_id = $person_id++;
+        my $employee_id = guid;
         my $country = _random_country();
         $employees_person->{$employee_id} = $self->_generate_person(
             person_id => $employee_id,
@@ -297,7 +298,8 @@ sub generate_properties($self) {
     }
 
     my $properties = {};
-    for my $property_id (1 .. PROPERTY_COUNT) {
+    for (1 .. PROPERTY_COUNT) {
+        my $property_id = guid;
         my $owner = _random_person($people);
         my $property_type = _random_element(@PROPERTY_TYPES);
         my $num_bedrooms = int(rand(MAX_BEDROOMS));
@@ -518,7 +520,6 @@ sub generate_rental_agreement($self) {
     }
 
     my @rental_agreements;
-    my $rental_id = 0;
     for my $property (values %$properties) {
         # Blocked properties are hard to deal with correctly, just skip them.
         next if !defined $property->{advance_booking_allowed_for_num_months};
@@ -533,12 +534,12 @@ sub generate_rental_agreement($self) {
         for (; $date <= $stop_date; $date->add(days => 1)) {
             next unless rand() < SCHED_RENTAL_AGREEMENT_CHANCE;
 
-            my $renter = _random_element(grep { $_->{person_id} != $property->{host_id} } values %$people);
+            my $renter = _random_element(grep { $_->{person_id} ne $property->{host_id} } values %$people);
             my $num_days = int(_random_exponential(SCHED_RENTAL_AGREEMENT_LAMBDA)) + 1;
             (my $signed_at = $date->clone)->subtract(days => int(_random_exponential(0.1)) + 1);
             (my $ends_at = $date->clone)->add(days => $num_days);
             push @rental_agreements, {
-                rental_id      => $rental_id++,
+                rental_id      => guid,
                 property_id    => $property->{property_id},
                 person_id      => $renter->{person_id},
                 signed_at      => $signed_at->ymd('-'),

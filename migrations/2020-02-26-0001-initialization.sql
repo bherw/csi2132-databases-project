@@ -42,7 +42,7 @@ CREATE TYPE payment_statuses AS ENUM('Pending', 'Approved', 'Complete');
 CREATE TYPE password_hash_types AS ENUM('sha512_base64');
 
 CREATE TABLE "person" (
-  "person_id" SERIAL PRIMARY KEY,
+  "person_id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   "first_name" varchar(255) NOT NULL,
   "middle_name" varchar(255) NOT NULL,
   "last_name" varchar(255) NOT NULL,
@@ -60,8 +60,8 @@ CREATE TABLE "person" (
 );
 
 CREATE TABLE "property" (
-  "property_id" SERIAL PRIMARY KEY,
-  "host_id" int NOT NULL,
+  "property_id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  "host_id" uuid NOT NULL,
   "title" varchar NOT NULL DEFAULT 'Untitled Listing',
   "street_address" varchar NOT NULL DEFAULT '',
   "city" varchar NOT NULL DEFAULT '',
@@ -163,28 +163,28 @@ CREATE TABLE "property" (
 );
 
 CREATE TABLE "property_available_date" (
-  "property_id" int,
+  "property_id" uuid,
   "available_date" date,
   PRIMARY KEY ("property_id", "available_date"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
 
 CREATE TABLE "property_amenity" (
-  "property_id" int,
+  "property_id" uuid,
   "amenity" amenity_types,
   PRIMARY KEY ("property_id", "amenity"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
 
 CREATE TABLE "property_accessibility" (
-  "property_id" int,
+  "property_id" uuid,
   "accessibility" accessibility_types,
   PRIMARY KEY ("property_id", "accessibility"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
 
 CREATE TABLE "property_bedroom" (
-  "property_id" int,
+  "property_id" uuid,
   "bedroom_number" int,
   "bed_type" bed_types,
   "num_beds" int NOT NULL,
@@ -193,31 +193,31 @@ CREATE TABLE "property_bedroom" (
 );
 
 CREATE TABLE "property_host_language" (
-  "property_id" int,
+  "property_id" uuid,
   "host_language" varchar,
   PRIMARY KEY ("property_id", "host_language"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
 
 CREATE TABLE "property_photo" (
-  "property_id" int,
+  "property_id" uuid,
   "photo_filename" varchar,
   PRIMARY KEY ("property_id", "photo_filename"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
 
 CREATE TABLE "property_custom_house_rule" (
-  "property_id" int,
+  "property_id" uuid,
   "custom_house_rule" text,
   PRIMARY KEY ("property_id", "custom_house_rule"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
 
 CREATE TABLE "message" (
-  "message_id" int PRIMARY KEY,
-  "property_id" int NOT NULL,
-  "sender_id" int NOT NULL,
-  "receiver_id" int NOT NULL,
+  "message_id" uuid  DEFAULT gen_random_uuid() PRIMARY KEY,
+  "property_id" uuid NOT NULL,
+  "sender_id" uuid NOT NULL,
+  "receiver_id" uuid NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT NOW(),
   "subject" varchar NOT NULL,
   "content" text NOT NULL,
@@ -227,8 +227,8 @@ CREATE TABLE "message" (
 );
 
 CREATE TABLE "reviews" (
-  "property_id" int,
-  "person_id" int,
+  "property_id" uuid,
+  "person_id" uuid,
   "created_at" timestamp NOT NULL DEFAULT NOW(),
   "updated_at" timestamp NOT NULL DEFAULT NOW(),
   "location" int NOT NULL CHECK ("location" BETWEEN 1 AND 5),
@@ -261,7 +261,7 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION update_property_review_scores_internal(review_property_id int)
+CREATE FUNCTION update_property_review_scores_internal(review_property_id uuid)
 RETURNS void
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -305,9 +305,9 @@ CREATE TRIGGER reviews_on_delete
 
 
 CREATE TABLE "rental_agreement" (
-  "rental_id" SERIAL PRIMARY KEY,
-  "property_id" int NOT NULL,
-  "person_id" int NOT NULL,
+  "rental_id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  "property_id" uuid NOT NULL,
+  "person_id" uuid NOT NULL,
   "signed_at" timestamp NOT NULL CHECK (signed_at <= starts_at),
   "starts_at" timestamp NOT NULL,
   "ends_at" timestamp NOT NULL CHECK (ends_at >= starts_at),
@@ -318,7 +318,7 @@ CREATE TABLE "rental_agreement" (
 );
 
 CREATE TABLE "payment" (
-  "rental_id" int NOT NULL,
+  "rental_id" uuid NOT NULL,
   "created_at" timestamp NOT NULL,
   "completed_at" timestamp CHECK (completed_at >= created_at),
   "type" payment_types NOT NULL,
@@ -329,15 +329,15 @@ CREATE TABLE "payment" (
 );
 
 CREATE TABLE "person_phone_number" (
-  "person_id" int,
+  "person_id" uuid,
   "phone_number" varchar,
   PRIMARY KEY ("person_id", "phone_number"),
   FOREIGN KEY ("person_id") REFERENCES "person" ("person_id")
 );
 
 CREATE TABLE "employee" (
-  "person_id" int PRIMARY KEY,
-  "manager_id" int,
+  "person_id" uuid PRIMARY KEY,
+  "manager_id" uuid,
   "workplace" varchar NOT NULL,
   "position" position_types NOT NULL,
   "salary" numeric(12,2) NOT NULL,
@@ -347,7 +347,7 @@ CREATE TABLE "employee" (
 
 CREATE TABLE "branch" (
   "country" varchar PRIMARY KEY,
-  "manager_id" int NOT NULL,
+  "manager_id" uuid NOT NULL,
   FOREIGN KEY ("manager_id") REFERENCES "employee" ("person_id") DEFERRABLE INITIALLY IMMEDIATE
 );
 

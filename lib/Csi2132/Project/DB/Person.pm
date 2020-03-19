@@ -20,16 +20,7 @@ sub load_by_id($self, $id) {
 }
 
 sub register($self, $attrs) {
-    $attrs->{person_id} = int(rand(2**31));
-    try {
-        $self->pg->db->insert($PERSON, $attrs);
-    } catch {
-        my $e = shift;
-        if ($e =~ /duplicate key value violates unique constraint "person_pkey"/) {
-            return $self->register($attrs);
-        }
-        die $e;
-    };
+    $self->pg->db->insert($PERSON, $attrs);
     return $self->load_by_email($attrs->{email});
 }
 
