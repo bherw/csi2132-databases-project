@@ -28,6 +28,7 @@ sub index($self) {
             SELECT 1 FROM $RENTAL_AGREEMENT R
             WHERE R.property_id=P.property_id
             AND starts_at BETWEEN \$1 AND \$2)
+        AND \$1 >= current_date + days_of_notice_required
         $where_city
         }, $from_date, $to_date, ($city ? $city : ()))->hashes;
 
