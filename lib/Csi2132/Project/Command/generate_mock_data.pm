@@ -36,6 +36,7 @@ use constant PROPERTY_PUBLISHED_CHANCE => 0.90;
 use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.05;
 use constant BLOCKED_PROPERTY_CHANCE => 0.1;
 use constant BLOCKED_PROPERTIES_GENERATE_DAYS => 365;
+use constant BLOCKED_PROPERTY_AVAILABILITY_LAMBDA => 0.1;
 use constant PROPERTY_ACCESSIBILITY_CHANCE => 0.1;
 use constant PROPERTY_AMENITY_CHANCE => 0.50;
 use constant PROPERTY_HOST_LANGUAGE_CHANCE => 0.5;
@@ -393,21 +394,20 @@ sub generate_property_available_dates($self) {
             defined $property->{advance_booking_allowed_for_num_months} &&
             0 == $property->{advance_booking_allowed_for_num_months};
 
-        my $available = 1;
         my $date = DateTime->now();
-        for my $i (0 .. BLOCKED_PROPERTIES_GENERATE_DAYS) {
-            if (rand() < 0.5) {
-                $available = !$available;
-            }
-            if ($available) {
-                push @property_availability, {
-                    property_id    => $property->{property_id},
-                    available_date => $date->ymd('-'),
-                };
-            }
-            $date = $date->add(days => 1);
+        my $until = $date->clone->add(days => BLOCKED_PROPERTIES_GENERATE_DAYS);
+        while ($date <= $until) {
+            my $ends_at = $date->clone->add(days => _random_exponential(BLOCKED_PROPERTY_AVAILABILITY_LAMBDA));
+            push @property_availability, {
+                property_id => $property->{property_id},
+                starts_at   => $date->ymd('-'),
+                ends_at     => $ends_at->ymd('-')
+            };
+
+            $date = $ends_at->add(days => 2 + _random_exponential(BLOCKED_PROPERTY_AVAILABILITY_LAMBDA));
         }
     }
+    print " inserting @{ [ scalar @property_availability ] } records...";
     $db->insert_all($PROPERTY_AVAILABLE_DATE, \@property_availability);
     say " done.";
     return \@property_availability;

@@ -164,10 +164,32 @@ CREATE TABLE "property" (
 
 CREATE TABLE "property_available_date" (
   "property_id" uuid,
-  "available_date" date,
-  PRIMARY KEY ("property_id", "available_date"),
+  "starts_at" date,
+  "ends_at" date NOT NULL CHECK (ends_at >= starts_at),
+  PRIMARY KEY ("property_id", "starts_at"),
   FOREIGN KEY ("property_id") REFERENCES "property" ("property_id")
 );
+
+CREATE FUNCTION check_property_available_date_non_contiguous()
+RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF EXISTS (SELECT * FROM property_available_date AD1 JOIN property_available_date AD2 ON AD1.property_id=AD2.property_id WHERE AD2.starts_at != AD1.starts_at AND (AD1.ends_at + 1 = AD2.starts_at OR AD2.starts_at BETWEEN AD1.starts_at AND AD1.ends_at OR AD2.ends_at BETWEEN AD1.starts_at AND AD1.ends_at)) then
+        RAISE EXCEPTION 'property availability blocks must be non-contiguous';
+    END IF;
+    return new;
+END
+$$;
+
+CREATE TRIGGER check_property_available_date_non_contiguous_on_insert BEFORE INSERT
+   ON property_available_date
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_property_available_date_non_contiguous();
+
+CREATE TRIGGER check_property_available_date_non_contiguous_on_update BEFORE UPDATE
+   ON property_available_date
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_property_available_date_non_contiguous();
 
 CREATE TABLE "property_amenity" (
   "property_id" uuid,
@@ -375,6 +397,7 @@ DROP TABLE IF EXISTS "payment" CASCADE;
 DROP FUNCTION insert_property_review_scores;
 DROP FUNCTION update_property_review_scores;
 DROP FUNCTION update_property_review_scores_internal;
+DROP FUNCTION check_property_available_date_non_contiguous;
 
 DROP TYPE IF EXISTS property_types;
 DROP TYPE IF EXISTS room_types;
