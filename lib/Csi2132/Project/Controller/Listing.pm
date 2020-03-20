@@ -29,6 +29,17 @@ sub index($self) {
             WHERE R.property_id=P.property_id
             AND starts_at BETWEEN \$1 AND \$2)
         AND \$1 >= current_date + days_of_notice_required
+        AND (
+            advance_booking_allowed_for_num_months IS NULL
+            OR advance_booking_allowed_for_num_months > 0 AND
+                \$1 <= current_date + (advance_booking_allowed_for_num_months || ' months')::interval
+            OR advance_booking_allowed_for_num_months = 0 AND EXISTS (
+                SELECT 1 FROM property_available_date AD
+                    WHERE P.property_id=AD.property_id
+                    AND \$1 BETWEEN starts_at AND ends_at
+                    AND \$2 BETWEEN starts_at AND ends_at
+            )
+        )
         $where_city
         }, $from_date, $to_date, ($city ? $city : ()))->hashes;
 
