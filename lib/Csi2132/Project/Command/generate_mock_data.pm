@@ -33,7 +33,8 @@ use constant MAX_WEEKLY_DISCOUNT => 20;
 use constant MAX_MONTHLY_DISCOUNT => 20;
 use constant PROPERTY_DELETED_CHANCE => 0.5;
 use constant PROPERTY_PUBLISHED_CHANCE => 0.90;
-use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.95;
+use constant ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE => 0.05;
+use constant BLOCKED_PROPERTY_CHANCE => 0.1;
 use constant BLOCKED_PROPERTIES_GENERATE_DAYS => 365;
 use constant PROPERTY_ACCESSIBILITY_CHANCE => 0.1;
 use constant PROPERTY_AMENITY_CHANCE => 0.50;
@@ -343,7 +344,7 @@ sub generate_properties($self) {
             getting_around                         => $lorem->paragraphs(int(rand(1)) + 1),
             days_of_notice_required                => int(rand(MAX_DAYS_OF_NOTICE_REQUIRED)),
             sameday_booking_allowed_before_time    => rand() < SAMEDAY_BOOKING_CHANCE ? sprintf('%02d:00', int(rand(24))) : undef,
-            advance_booking_allowed_for_num_months => rand() > ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE ? undef : int(rand(MAX_ADVANCE_BOOKING)),
+            advance_booking_allowed_for_num_months => rand() < ALLOW_INDEFINITE_FUTURE_BOOKING_CHANCE ? undef : int(rand(MAX_ADVANCE_BOOKING) + (rand() < BLOCKED_PROPERTY_CHANCE ? 0 : 1)),
             min_stay_length                        => $min_stay_length,
             max_stay_length                        => $max_stay_length,
             base_price                             => $base_price,
@@ -388,7 +389,9 @@ sub generate_property_available_dates($self) {
     my @property_availability;
     for my $property (values %$properties) {
         next if $property->{is_deleted};
-        next unless !defined $property->{advance_booking_allowed_for_num_months};
+        next unless
+            defined $property->{advance_booking_allowed_for_num_months} &&
+            0 == $property->{advance_booking_allowed_for_num_months};
 
         my $available = 1;
         my $date = DateTime->now();
@@ -522,7 +525,9 @@ sub generate_rental_agreement($self) {
     my @rental_agreements;
     for my $property (values %$properties) {
         # Blocked properties are hard to deal with correctly, just skip them.
-        next if !defined $property->{advance_booking_allowed_for_num_months};
+        next if
+            defined $property->{advance_booking_allowed_for_num_months} &&
+                0 == $property->{advance_booking_allowed_for_num_months};
 
         my $date = DateTime->now->subtract(days => int(DAYS_OF_RENTAL_AGREEMENTS / 2));
         my $stop_date = DateTime->now->add(days => int(DAYS_OF_RENTAL_AGREEMENTS / 2));
