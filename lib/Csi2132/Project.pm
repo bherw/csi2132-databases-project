@@ -94,6 +94,10 @@ sub startup {
         require Csi2132::Project::DB::Person;
         state $people = Csi2132::Project::DB::Person->new(pg => $pg)
     });
+    $self->helper(properties => sub {
+        require Csi2132::Project::DB::Property;
+        state $properties = Csi2132::Project::DB::Property->new(pg => $pg);
+    });
 
     # Migrate to latest version if necessary
     my $migrations_sql

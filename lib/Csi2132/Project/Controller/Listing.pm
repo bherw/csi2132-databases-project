@@ -63,6 +63,10 @@ sub show($self) {
     return $self->reply->not_found unless $property;
 
     $self->stash(property => $property);
+
+    my $from = DateTime->today;
+    my $to = $from->clone->add(months => 1);
+    $self->stash(unavailability => $self->properties->unavailability($property, $from, $to));
 }
 
 1;

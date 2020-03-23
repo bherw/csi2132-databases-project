@@ -19,5 +19,15 @@
 
             </div>
         </div>
+        <h2>Availability</h2>
+        <table>
+            % for my $date (sort keys %$unavailability) {
+                % if ($unavailability->{$date}) {
+                    <tr class="red"><td><%= $date %></td><td><%= $unavailability->{$date} %></td></tr>
+                % } else {
+                    <tr class="green"><td><%= $date %></td><td></td></tr>
+                % }
+            % }
+        </table>
     </div>
 </div>
