@@ -3,18 +3,21 @@
 % title $p->{title};
 
 <div class="row">
-<div class="col s12">
-<h1>
-<%= $p->{title} %>
-</h1>
-<div>
-<div style="display:flex">
-    <div style="margin-right: 1rem;" class="blue-text accent-3">
-        <i class="material-icons">location_on</i>
+    <div class="col s12">
+        <h1><%= $p->{title} %></h1>
+        <p>Hosted by <%= $p->{owner_name} %></p>
+        <div>
+            <div style="display:flex">
+                <div style="margin-right: 1rem;" class="blue-text accent-3">
+                    <i class="material-icons">location_on</i>
+                </div>
+                <div>
+                    <%= $p->{street_address} %><br/>
+                    <%= $p->{city} %>, <%= $p->{state} %>, <%= $p->{postal_code} %><br/>
+                    <%= $p->{country} %>
+                </div>
+
+            </div>
+        </div>
     </div>
-    <div>
-<%= $p->{street_address} %><br/>
-<%= $p->{city} %>, <%= $p->{state} %>, <%= $p->{postal_code} %><br/>
-<%= $p->{country} %>
-</div>
 </div>
