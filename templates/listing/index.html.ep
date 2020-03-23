@@ -7,12 +7,12 @@
         %= label_for city => 'City'
     </div>
     <div class="input-field col s3">
-        %= date_field 'from_date', value => DateTime->now->ymd('-')
+        %= date_field 'from_date', value => $from_date
         %= label_for from_date => 'Available from'
         %= errors_for 'from_date'
     </div>
     <div class="input-field col s3">
-        %= date_field 'to_date', value => DateTime->now->ymd('-')
+        %= date_field 'to_date', value => $to_date
         %= label_for to_date => 'To'
         %= errors_for to_date => (gte => 'Must be greater than or equal to the from date.')
     </div>

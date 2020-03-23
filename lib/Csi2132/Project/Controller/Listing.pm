@@ -8,13 +8,17 @@ sub index($self) {
     if ($self->param('from_date')) {
         my $v = $self->validation;
         $v->required('from_date')->date;
-        $v->required('to_date')->date->gte('from_date');
+        if ($self->param('to_date')) {
+            $v->optional('to_date')->date->gte('from_date');
+        }
 
         return $self->stash(listings => []) unless $v->is_valid;
     }
 
     my $from_date = $self->param('from_date') || DateTime->now->ymd('-');
     my $to_date = $self->param('to_date') || $from_date;
+    $self->stash(from_date => $from_date);
+    $self->stash(to_date => $to_date);
     my $city = $self->param('city');
     my $where_city = $city ? ' AND city = $3 ' : '';
 
