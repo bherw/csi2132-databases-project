@@ -46,4 +46,19 @@ sub index($self) {
     $self->stash(listings => $listings);
 }
 
+sub show($self) {
+    my $property_id = $self->param('property_id');
+    my $property = $self->db->query(q{
+        SELECT
+            property.*,
+            person.first_name || ' ' || person.last_name as owner_name
+        FROM property
+        JOIN person ON host_id=person_id
+        WHERE property_id=?}, $property_id)->hash;
+
+    return $self->reply->not_found unless $property;
+
+    $self->stash(property => $property);
+}
+
 1;
