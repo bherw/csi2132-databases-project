@@ -15,8 +15,10 @@ sub index($self) {
         return $self->stash(listings => []) unless $v->is_valid;
     }
 
-    my $from_date = $self->param('from_date') || DateTime->now->ymd('-');
+    my $today = DateTime->today->ymd('-');
+    my $from_date = $self->param('from_date') || $today;
     my $to_date = $self->param('to_date') || $from_date;
+    $self->stash(today => $today);
     $self->stash(from_date => $from_date);
     $self->stash(to_date => $to_date);
     my $city = $self->param('city');
@@ -25,7 +27,8 @@ sub index($self) {
     my $listings = $self->db->query(qq{
         SELECT property_id, title, base_price, city
         FROM $PROPERTY P
-        WHERE property_id NOT IN (
+        WHERE is_published
+        AND property_id NOT IN (
             SELECT property_id FROM $RENTAL_AGREEMENT WHERE \$1 BETWEEN starts_at AND ends_at
         )
         AND NOT EXISTS (
@@ -64,8 +67,12 @@ sub show($self) {
 
     $self->stash(property => $property);
 
-    my $from = DateTime->today;
+    my $today = DateTime->today;
+    my $from = $self->param('availability_from');
+    $from = $from ? DateTime::Format::Pg->parse_datetime($from) : $today;
     my $to = $from->clone->add(months => 1);
+    $self->stash(availability_from => $from);
+    $self->stash(availability_to => $to);
     $self->stash(unavailability => $self->properties->unavailability($property, $from, $to));
 }
 

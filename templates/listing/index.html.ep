@@ -25,7 +25,7 @@
     <tr><th>Property</th><th>City</th><th>Daily price</th></tr>
     % for my $listing (@$listings) {
         %= tag tr => begin
-            %= t td => link_to $listing->{title} => url_for('/listing/' . $listing->{property_id})
+            %= t td => link_to $listing->{title} => url_for('/listing/' . $listing->{property_id})->query(availability_from => $from_date)
             %= t td => $listing->{city}
             %= t td => '$' . $listing->{base_price}
         %= end
