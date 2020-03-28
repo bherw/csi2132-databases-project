@@ -32,6 +32,10 @@ sub unavailability($self, $property, $from, $to) {
         # Undef == available
         $unavailablity{$ymd} = ();
 
+        if ($date < $today) {
+            $unavailablity{$ymd} //= 'Date is in the past';
+        }
+
         if ($date < $notice_date) {
             $unavailablity{$ymd} //= 'Host requires more notice';
         }
