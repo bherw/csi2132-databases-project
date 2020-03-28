@@ -79,12 +79,11 @@ sub _for_date_ranges($ranges, $from, $to, $cb) {
     for my $range (@$ranges) {
         my $date = DateTime::Format::Pg->parse_datetime($range->{starts_at});
         my $ends_at = DateTime::Format::Pg->parse_datetime($range->{ends_at});
-        while ($date <= $ends_at) {
+        for (; $date <= $ends_at; $date->add(days => 1)) {
             local $_ = $date;
             if ($date <= $to && $date >= $from) {
                 $cb->();
             }
-            $date->add(days => 1);
         }
     }
 }
