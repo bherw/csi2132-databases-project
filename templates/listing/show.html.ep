@@ -20,6 +20,14 @@
             </div>
         </div>
         <h2>Availability</h2>
+        <div class="prevnext">
+            <div>
+                %= link_to '< previous month' => url_with->query(availability_from => $availability_prev->ymd('-'))
+            </div>
+            <div>
+                %= link_to 'next month >' => url_with->query(availability_from => $availability_next->ymd('-'))
+            </div>
+        </div>
         <table>
             % for my $date (sort keys %$unavailability) {
                 % if ($unavailability->{$date}) {
@@ -29,5 +37,13 @@
                 % }
             % }
         </table>
+        <div class="prevnext">
+            <div>
+                %= link_to '< previous month' => url_with->query(availability_from => $availability_prev->ymd('-'))
+            </div>
+            <div>
+                %= link_to 'next month >' => url_with->query(availability_from => $availability_next->ymd('-'))
+            </div>
+        </div>
     </div>
 </div>

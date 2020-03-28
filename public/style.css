@@ -11,3 +11,9 @@
 input.field-with-error {
     border-bottom: 2px solid red !important;
 }
+
+.prevnext {
+    display: flex;
+    justify-content: space-between;
+    margin: 1em;
+}

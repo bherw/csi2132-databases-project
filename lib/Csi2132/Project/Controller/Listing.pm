@@ -70,9 +70,11 @@ sub show($self) {
     my $today = DateTime->today;
     my $from = $self->param('availability_from');
     $from = $from ? DateTime::Format::Pg->parse_datetime($from) : $today;
-    my $to = $from->clone->add(months => 1);
+    my $to = $from->clone->add(months => 1)->subtract(days => 1);
     $self->stash(availability_from => $from);
     $self->stash(availability_to => $to);
+    $self->stash(availability_prev => $from->clone->subtract(months => 1));
+    $self->stash(availability_next => $to->clone->add(days => 1));
     $self->stash(unavailability => $self->properties->unavailability($property, $from, $to));
 }
 
