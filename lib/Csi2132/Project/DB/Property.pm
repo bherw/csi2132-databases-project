@@ -26,7 +26,7 @@ sub unavailability($self, $property, $from, $to) {
     my $advance_date = defined $advance ? $today->clone->add(months => $advance) : undef;
     my $date = $from->clone;
 
-    while ($date < $to) {
+    while ($date <= $to) {
         my $ymd = $date->ymd('-');
 
         # Undef == available
