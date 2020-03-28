@@ -46,6 +46,7 @@ sub unavailability($self, $property, $from, $to) {
     # Blocked properties default to unavailable,
     # but have certain blocks marked available
     if (defined $advance && $advance == 0) {
+        $date = $from->clone;
         while ($date <= $to) {
             $unavailablity{$date->ymd('-')} //= 'Unavailable';
             $date->add(days => 1)
