@@ -127,20 +127,10 @@ sub startup {
     # Normal route to controller
     $r->get('/')->to('example#welcome');
 
-    # Test Queries
+    # Test Queries (not to be included in the application)
     # TODO: replace with proper RBAC
-    my $test = $r->any('/test')->over(user_access => sub($c, $user) { $user->is_employee })->to('test_queries#');
-    $test->get('/')->to('#index');
-    $test->get('/one')->to('#query_one');
-    $test->get('/two')->to('#query_two');
-    $test->get('/three')->to('#query_three');
-    $test->get('/four')->to('#query_four');
-    $test->get('/five')->to('#query_five');
-    $test->get('/six')->to('#query_six');
-    $test->get('/seven')->to('#query_seven');
-    $test->get('/eight')->to('#query_eight');
-    $test->get('/nine')->to('#query_nine');
-    $test->get('/ten')->to('#query_ten');
+    # Left as example of access control
+    # my $test = $r->any('/test')->over(user_access => sub($c, $user) { $user->is_employee })->to('test_queries#');
 
     # Listings
     $r->get('/listing')->to('listing#index');
