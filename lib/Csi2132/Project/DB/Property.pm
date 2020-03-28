@@ -24,9 +24,8 @@ sub unavailability($self, $property, $from, $to) {
     my $today = DateTime->today;
     my $notice_date = $today->clone->add(days => $notice);
     my $advance_date = defined $advance ? $today->clone->add(months => $advance) : undef;
-    my $date = $from->clone;
 
-    while ($date <= $to) {
+    for (my $date = $from->clone; $date <= $to; $date->add(days => 1)) {
         my $ymd = $date->ymd('-');
 
         # Undef == available
@@ -43,17 +42,13 @@ sub unavailability($self, $property, $from, $to) {
         if ($advance && $date > $advance_date) {
             $unavailablity{$ymd} //= 'Too far in advance';
         }
-
-        $date->add(days => 1);
     }
 
     # Blocked properties default to unavailable,
     # but have certain blocks marked available
     if (defined $advance && $advance == 0) {
-        $date = $from->clone;
-        while ($date <= $to) {
+        for (my $date = $from->clone; $date <= $to; $date->add(days => 1)) {
             $unavailablity{$date->ymd('-')} //= 'Unavailable';
-            $date->add(days => 1)
         }
 
         my $unblocked_dates = $self->pg->db->query(qq{
