@@ -32,6 +32,7 @@
          },
          "requires" : {
             "Const::Fast" : "0",
+            "Data::Faker" : "0",
             "Data::GUID" : "0",
             "DateTime" : "0",
             "DateTime::Format::Pg" : "0",
