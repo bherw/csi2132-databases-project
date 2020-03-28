@@ -23,23 +23,20 @@ sub startup {
     $self->secrets($config->{secrets});
 
     # Salted hash
-    $self->helper(hash_password => sub {
-        my ($self, $type, $password) = @_;
+    $self->helper(hash_password => sub($self, $type, $password) {
         croak "Invalid password hash type: $type" if $type ne 'sha512_base64';
         return _hash_password($type, $config->{secrets}->[0], $password);
     });
 
     # Validate salted hash
-    $self->helper(is_valid_password => sub {
-        my ($self, $type, $password, $from_database) = @_;
+    $self->helper(is_valid_password => sub($self, $type, $password, $from_database) {
         croak "Invalid password hash type: $type" if $type ne 'sha512_base64';
 
         # Check all salts to prevent timing attacks
         return 0 < sum 0, map { secure_compare $from_database, _hash_password($type, $_, $password) } @{$config->{secrets}};
     });
 
-    $self->helper(current_user => sub {
-        my ($self) = @_;
+    $self->helper(current_user => sub($self) {
         return unless my $person_id = $self->session('person_id');
         if (my $current_user = $self->stash('current_user')) {
             return $current_user;
@@ -145,8 +142,7 @@ sub startup {
     $r->post('/user/register')->to('user#post_register');
 }
 
-sub _hash_password {
-    my ($type, $salt, $password) = @_;
+sub _hash_password($type, $salt, $password) {
     my $salted_password = $salt . $password;
     return sha512_base64($salted_password);
 }

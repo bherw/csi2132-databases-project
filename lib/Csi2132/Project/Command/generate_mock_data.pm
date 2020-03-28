@@ -95,8 +95,7 @@ has properties_host_language => sub { shift->generate_property_host_language };
 has rental_agreement => sub { shift->generate_rental_agreement };
 has reviews => sub { shift->generate_reviews };
 
-sub run {
-    my ($self, @argv) = @_;
+sub run($self, @argv) {
     STDOUT->autoflush(1);
 
     $self->people;
@@ -603,8 +602,7 @@ sub generate_reviews($self) {
     return \@reviews;
 }
 
-sub _generate_person {
-    my ($self, %defaults) = @_;
+sub _generate_person($self, %defaults) {
     state $password = $self->app->hash_password(HASH_TYPE, 'password');
     return {
         %defaults,
@@ -624,8 +622,7 @@ sub _generate_person {
     }
 }
 
-sub _generate_unique_emails {
-    my ($self, $count) = @_;
+sub _generate_unique_emails($self, $count) {
     my %emails;
     while (keys %emails < $count) {
         $emails{$faker->email} = ();
@@ -649,8 +646,7 @@ sub _random_subset($set, $chance) {
     grep { rand() < $chance } @$set
 }
 
-sub _random_person {
-    my $people = shift;
+sub _random_person($people) {
     my @ids = keys %$people;
     return $people->{@ids[int(rand(scalar @ids))]};
 }

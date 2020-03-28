@@ -2,7 +2,7 @@ package Csi2132::Project::DB;
 use v5.20;
 use Const::Fast;
 use List::Util qw(min);
-use Mojo::Base 'Mojo::Pg::Database';
+use Mojo::Base 'Mojo::Pg::Database', -signatures;
 
 const our $BRANCH => 'branch';
 const our $EMPLOYEE => 'employee';
@@ -23,8 +23,7 @@ const our $PAYMENT => 'payment';
 # This is basically just a less flexible version of the Mojo::Pg::Database->insert
 # method which it's overriding, but this course is about using SQL,
 # so let's reinvent the wheel just to prove we can.
-sub insert {
-    my ($self, $table, $values) = @_;
+sub insert($self, $table, $values) {
     # Note: the ordering of keys/values with respect to each other is guaranteed
     # to be mutually stable if the hash has not been modified.
     my $attributes = join ',', map {quotemeta $_} keys %$values;
@@ -35,8 +34,7 @@ sub insert {
 # Insert many rows into the db at once.
 # values should be an arrayref of hashrefs.
 # Assumes that all rows have the same attributes.
-sub insert_all {
-    my ($self, $table, $values, $options) = @_;
+sub insert_all($self, $table, $values, $options) {
     my @values = @$values;
     $options //= {};
     $options->{autocommit} //= 1;
