@@ -18,6 +18,7 @@
             % if (current_user->is_employee) {
               <li><%= link_to 'Employee View' => '/employee' %></li>
             % }
+            <li><%= link_to 'Messages' => url_for '/message' %></li>
           % }
 
         </ul>

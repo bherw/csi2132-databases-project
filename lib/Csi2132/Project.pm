@@ -138,6 +138,9 @@ sub startup {
     # Host
     $r->get('/host')->to('host#index');
 
+    # Messages
+    $r->get('/message')->to('message#index');
+
     # Users
     $r->get('/user')->over(user_access => 'user/view self')->to('user#show');
     $r->get('/user/login')->to('user#login');

@@ -6,6 +6,7 @@ use Mojo::Base 'Mojo::Pg::Database', -signatures;
 
 const our $BRANCH => 'branch';
 const our $EMPLOYEE => 'employee';
+const our $MESSAGE => 'message';
 const our $PERSON => 'person';
 const our $PERSON_PHONE_NUMBER => 'person_phone_number';
 const our $POSTGRES_PLACEHOLDER_LIMIT => 65535;
@@ -64,7 +65,7 @@ sub import {
     for (qw(BRANCH EMPLOYEE PAYMENT PERSON PERSON_PHONE_NUMBER PROPERTY
         PROPERTY_AVAILABLE_DATE PROPERTY_ACCESSIBILITY PROPERTY_AMENITY
         PROPERTY_BEDROOM PROPERTY_CUSTOM_HOUSE_RULE PROPERTY_HOST_LANGUAGE
-        RENTAL_AGREEMENT RENTAL_REQUESTS REVIEWS
+        RENTAL_AGREEMENT RENTAL_REQUESTS REVIEWS MESSAGE
     )) {
         no strict 'refs';
         *{"${caller}::$_"} = *$_;
