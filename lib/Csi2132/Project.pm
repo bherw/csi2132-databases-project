@@ -135,6 +135,9 @@ sub startup {
     $r->get('/listing/:property_id/rent')->to('listing#rent');
     $r->post('/listing/:property_id/rent')->to('listing#create_rental_request');
 
+    # Host
+    $r->get('/host')->to('host#index');
+
     # Users
     $r->get('/user')->over(user_access => 'user/view self')->to('user#show');
     $r->get('/user/login')->to('user#login');

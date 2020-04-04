@@ -1,0 +1,50 @@
+% layout 'default';
+% title 'Welcome';
+% if (@$properties) {
+    <h2>My Rental Requests</h2>
+    % if (@$rental_requests) {
+        <table>
+            <tr><th>Who</th><th>Property</th><th>From</th><th>To</th><th>Actions</th></tr>
+            % for my $req (@$rental_requests) {
+                <tr>
+                    <td><%= $req->{guest_name} %></td>
+                    <td><%= $req->{title} %></td>
+                    <td><%= $req->{starts_at} %></td>
+                    <td><%= $req->{ends_at} %></td>
+                    <td>
+                        %= link_to 'Message', class => 'waves-effect waves-light btn', url_for "/host/$req->{property_id}/$req->{person_id}/message"
+                        %= form_for "/host/$req->{property_id}/$req->{person_id}/accept" => (method => 'POST') => begin
+                            %= submit_button 'Accept', class => 'waves-effect waves-light btn'
+                        %= end
+                        %= form_for "/host/$req->{property_id}/$req->{person_id}/reject" => (method => 'POST') => begin
+                            %= submit_button 'Reject', class => 'waves-effect waves-light btn'
+                        %= end
+                    </td>
+                </tr>
+            % }
+        </table>
+    % } else {
+        <p>Nobody is requesting a rental at this time.</p>
+    % }
+% }
+
+<h2>My Properties</h2>
+
+%= link_to 'List a new property' => url_for '/host/create'
+
+<table>
+    <tr><th>Name</th><th>Actions</th></tr>
+    % for my $p (@$properties) {
+        <tr>
+            <td><%= $p->{title} %></td>
+            <td>
+                %= form_for "/host/$p->{property_id}/edit" => (method => 'GET') => begin
+                   %= submit_button 'Edit', class => 'waves-effect waves-light btn'
+                %= end
+                %= form_for "/host/$p->{property_id}" => (method => 'DELETE') => begin
+                   %= submit_button 'Delete', class => 'waves-effect waves-light btn'
+                %= end
+            </td>
+        </tr>
+    % }
+</table>
