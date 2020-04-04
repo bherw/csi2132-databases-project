@@ -339,6 +339,16 @@ CREATE TABLE "rental_agreement" (
   FOREIGN KEY ("person_id") REFERENCES "person" ("person_id")
 );
 
+CREATE TABLE "rental_requests" (
+  "property_id" uuid NOT NULL,
+  "person_id" uuid NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT NOW(),
+  "starts_at" date NOT NULL,
+  "ends_at" date NOT NULL CHECK (ends_at >= starts_at),
+  FOREIGN KEY ("property_id") REFERENCES "property" ("property_id"),
+  FOREIGN KEY ("person_id") REFERENCES "person" ("person_id")
+);
+
 CREATE TABLE "payment" (
   "rental_id" uuid NOT NULL,
   "created_at" timestamp NOT NULL,
@@ -391,6 +401,7 @@ DROP TABLE IF EXISTS "property_photo" CASCADE;
 DROP TABLE IF EXISTS "property_custom_house_rule" CASCADE;
 DROP TABLE IF EXISTS "message" CASCADE;
 DROP TABLE IF EXISTS "reviews" CASCADE;
+DROP TABLE IF EXISTS "rental_requests" CASCADE;
 DROP TABLE IF EXISTS "rental_agreement" CASCADE;
 DROP TABLE IF EXISTS "payment" CASCADE;
 

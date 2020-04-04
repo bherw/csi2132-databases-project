@@ -19,6 +19,21 @@
 
             </div>
         </div>
+        % if ($rental_request) {
+            <div>You have a pending request to rent this property from
+                %= $rental_request->{starts_at}
+                to
+                %= $rental_request->{ends_at}
+            </div>
+        % } elsif (!current_user) {
+            <div>
+                %= link_to 'Login to request a rental' => url_for '/user/login'
+            </div>
+        % } else {
+            <div>
+                %= link_to 'Request a rental' => url_for '/listing/' . $property->{property_id} . '/rent'
+            </div>
+        % }
         <h2>Availability</h2>
         <div class="prevnext">
             <div>

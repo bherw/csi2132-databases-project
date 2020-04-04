@@ -132,6 +132,8 @@ sub startup {
     # Listings
     $r->get('/listing')->to('listing#index');
     $r->get('/listing/:property_id')->to('listing#show');
+    $r->get('/listing/:property_id/rent')->to('listing#rent');
+    $r->post('/listing/:property_id/rent')->to('listing#create_rental_request');
 
     # Users
     $r->get('/user')->over(user_access => 'user/view self')->to('user#show');

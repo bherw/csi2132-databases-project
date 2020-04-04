@@ -8,6 +8,17 @@ use Mojo::Base -base, -signatures;
 
 has 'pg';
 
+sub rental_request($self, $property, $person) {
+    my $property_id = ref $property ? $property->{property_id} : $property;
+    my $person_id = ref $person ? $person->{person_id} : $person;
+    return unless $person_id;
+
+    return $self->pg->db->query(qq{
+        SELECT * FROM $RENTAL_REQUESTS
+        WHERE property_id = ? AND person_id = ?
+        }, $property_id, $person_id)->hash;
+}
+
 sub unavailability($self, $property, $from, $to) {
     unless (ref $property) {
         $property = $self->pg->db->query(qq{

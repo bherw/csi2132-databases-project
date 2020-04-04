@@ -72,6 +72,7 @@ sub index($self) {
 
 sub show($self) {
     my $property = $self->property or return;
+    $self->stash(rental_request => scalar $self->properties->rental_request($property, $self->current_user));
 
     my $today = DateTime->today;
     my $from = $self->param('availability_from');
@@ -82,6 +83,41 @@ sub show($self) {
     $self->stash(availability_prev => $from->clone->subtract(months => 1));
     $self->stash(availability_next => $to->clone->add(days => 1));
     $self->stash(unavailability => $self->properties->unavailability($property, $from, $to));
+}
+
+sub rent($self) {
+    $self->property;
+}
+
+sub create_rental_request($self) {
+    my $property = $self->property;
+    my $person = $self->current_user;
+
+    # Validate
+    if ($self->param('from_date')) {
+        my $v = $self->validation;
+        $v->required('from_date')->date;
+        if ($self->param('to_date')) {
+            $v->optional('to_date')->date->gte('from_date');
+        }
+
+        return $self->render('user/register') if $v->has_error;
+
+        if ($self->properties->rental_request($property, $person)) {
+            $self->add_error('You already have a pending rental request');
+            $self->redirect_to($self->url_for("/listing/$property->{property_id}"));
+            return;
+        }
+    }
+
+    $self->db->insert($RENTAL_REQUESTS, {
+        property_id => $property->{property_id},
+        person_id   => $person->{person_id},
+        starts_at   => $self->param('from_date'),
+        ends_at     => $self->param('to_date'),
+    });
+    $self->flash(message => "Requested a rental, please wait for the host to confirm your rental request.");
+    $self->redirect_to($self->url_for("/listing/$property->{property_id}"));
 }
 
 1;
