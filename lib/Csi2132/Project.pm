@@ -122,7 +122,7 @@ sub startup {
     });
 
     # Normal route to controller
-    $r->get('/')->to('example#welcome');
+    $r->get('/')->to('home#home');
 
     # Test Queries (not to be included in the application)
     # TODO: replace with proper RBAC

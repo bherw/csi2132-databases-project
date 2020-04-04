@@ -1,0 +1,11 @@
+% layout 'default';
+% title 'Welcome';
+<h2>Welcome to 偽BnB</h2>
+<p>
+    <%= link_to 'Find somewhere to stay?' => url_for '/listing' %>
+    % if (current_user) {
+        Or <%= link_to 'host your own property' => '/host' %>!
+    % } else {
+        Or <%= link_to 'register' => '/user/register' %> to host your own property.
+    % }
+</p>
