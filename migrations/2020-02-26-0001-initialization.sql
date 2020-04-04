@@ -373,8 +373,8 @@ CREATE TABLE "branch" (
   FOREIGN KEY ("manager_id") REFERENCES "employee" ("person_id") DEFERRABLE INITIALLY IMMEDIATE
 );
 
-ALTER TABLE "employee" ADD FOREIGN KEY ("workplace") REFERENCES "branch" ("country") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "property" ADD FOREIGN KEY ("country") REFERENCES "branch" ("country");
+ALTER TABLE "employee" ADD FOREIGN KEY ("workplace") REFERENCES "branch" ("country") ON UPDATE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "property" ADD FOREIGN KEY ("country") REFERENCES "branch" ("country") ON UPDATE CASCADE;
 
 -- 1 down
 DROP TABLE IF EXISTS "employee" CASCADE;
