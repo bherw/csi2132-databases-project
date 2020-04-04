@@ -11,8 +11,8 @@
                     <td><%= $req->{title} %></td>
                     <td><%= $req->{starts_at} %></td>
                     <td><%= $req->{ends_at} %></td>
-                    <td>
-                        %= link_to 'Message', class => 'waves-effect waves-light btn', url_for "/host/$req->{property_id}/$req->{person_id}/message"
+                    <td class="table-actions">
+                        %= link_to 'Message', url_for("/host/$req->{property_id}/$req->{person_id}/message"), class => 'waves-effect waves-light btn'
                         %= form_for "/host/$req->{property_id}/$req->{person_id}/accept" => (method => 'POST') => begin
                             %= submit_button 'Accept', class => 'waves-effect waves-light btn'
                         %= end
@@ -37,7 +37,7 @@
     % for my $p (@$properties) {
         <tr>
             <td><%= $p->{title} %></td>
-            <td>
+            <td class="table-actions">
                 %= form_for "/host/$p->{property_id}/edit" => (method => 'GET') => begin
                    %= submit_button 'Edit', class => 'waves-effect waves-light btn'
                 %= end
