@@ -37,7 +37,7 @@ sub startup {
     });
 
     $self->helper(current_user => sub($self) {
-        return unless my $person_id = $self->session('person_id');
+        return undef unless my $person_id = $self->session('person_id');
         if (my $current_user = $self->stash('current_user')) {
             return $current_user;
         }
