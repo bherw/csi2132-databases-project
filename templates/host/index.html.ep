@@ -41,6 +41,16 @@
                 %= form_for "/host/$p->{property_id}/edit" => (method => 'GET') => begin
                    %= submit_button 'Edit', class => 'waves-effect waves-light btn'
                 %= end
+                % if ($p->{can_publish}) {
+                    %= form_for "/host/$p->{property_id}/publish" => (method => 'POST') => begin
+                        %= submit_button 'Publish', class => 'waves-effect waves-light btn'
+                    %= end
+                % }
+                % if ($p->{is_published}) {
+                    %= form_for "/host/$p->{property_id}/unpublish" => (method => 'POST') => begin
+                        %= submit_button 'Unpublish', class => 'waves-effect waves-light btn'
+                    %= end
+                % }
                 %= form_for "/host/$p->{property_id}" => (method => 'DELETE') => begin
                    %= submit_button 'Delete', class => 'waves-effect waves-light btn'
                 %= end
