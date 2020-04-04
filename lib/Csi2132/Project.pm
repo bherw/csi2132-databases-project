@@ -138,6 +138,9 @@ sub startup {
     # Host
     $r->get('/host')->over(user_access => 'host/index')->to('host#index');
 
+    # Employee page
+    $r->get('/employee')->over(user_access => sub($c, $user) { $user->is_employee })->to('employee#index');
+
     # Messages
     $r->get('/message')->to('message#index');
 

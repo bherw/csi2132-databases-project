@@ -1,0 +1,4 @@
+% layout 'default';
+% title 'Employee index';
+
+<h1>Employees, welcome</h1>
