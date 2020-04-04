@@ -132,11 +132,11 @@ sub startup {
     # Listings
     $r->get('/listing')->to('listing#index');
     $r->get('/listing/:property_id')->to('listing#show');
-    $r->get('/listing/:property_id/rent')->to('listing#rent');
-    $r->post('/listing/:property_id/rent')->to('listing#create_rental_request');
+    $r->get('/listing/:property_id/rent')->over(user_access => 'listing/rent')->to('listing#rent');
+    $r->post('/listing/:property_id/rent')->over(user_access => 'listing/rent')->to('listing#create_rental_request');
 
     # Host
-    $r->get('/host')->to('host#index');
+    $r->get('/host')->over(user_access => 'host/index')->to('host#index');
 
     # Messages
     $r->get('/message')->to('message#index');
