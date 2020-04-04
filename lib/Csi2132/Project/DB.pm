@@ -34,9 +34,8 @@ sub insert($self, $table, $values) {
 # Insert many rows into the db at once.
 # values should be an arrayref of hashrefs.
 # Assumes that all rows have the same attributes.
-sub insert_all($self, $table, $values, $options) {
+sub insert_all($self, $table, $values, $options = {}) {
     my @values = @$values;
-    $options //= {};
     $options->{autocommit} //= 1;
     return unless @values;
     my @attributes = keys %{ $values[0] };
