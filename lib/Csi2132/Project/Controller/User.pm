@@ -13,7 +13,7 @@ sub post_login($self) {
 
     my $user = $self->people->load_by_email($email);
     if ($user) {
-        if ($self->is_valid_password($user->password_type, $password, $user->password)) {
+        if ($self->is_valid_password($user->password_type, $password, $user->password) && !$user->is_deleted) {
             $self->session(person_id => $user->person_id);
             $self->redirect_to('/');
             return;
