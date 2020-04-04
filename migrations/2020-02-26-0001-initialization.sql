@@ -133,7 +133,7 @@ CREATE TABLE "property" (
   rating float,
 
   FOREIGN KEY ("host_id") REFERENCES "person" ("person_id"),
-  CONSTRAINT property_check_is_is_published CHECK (
+  CONSTRAINT property_check_is_published_implies_setup_complete CHECK (
     NOT is_published OR (
       "street_address" <> '' AND
       "state" <> '' AND
@@ -143,12 +143,10 @@ CREATE TABLE "property" (
       "checkin_time_to" IS NOT NULL AND
       "checkout_time_from" IS NOT NULL AND
       "checkout_time_to" IS NOT NULL AND
-      "checkout_time_to" IS NOT NULL AND
       "base_price" IS NOT NULL AND
       "min_price" IS NOT NULL AND
       "max_price" IS NOT NULL AND
       "currency" IS NOT NULL AND
-      "checkout_time_to" IS NOT NULL AND
       NOT "is_deleted"
     )
   ),
