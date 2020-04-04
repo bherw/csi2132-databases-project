@@ -4,6 +4,23 @@ use DateTime;
 use DateTime::Format::Pg;
 use Mojo::Base 'Csi2132::Project::Controller', -signatures;
 
+has property => sub($self) {
+    my $property_id = $self->param('property_id');
+    my $property = $self->db->query(q{
+        SELECT
+            property.*,
+            person.first_name || ' ' || person.last_name as owner_name
+        FROM property
+        JOIN person ON host_id=person_id
+        WHERE property_id=?}, $property_id)->hash;
+    if (!$property) {
+        $self->reply->not_found;
+        return;
+    }
+    $self->stash(property => $property);
+    return $property;
+};
+
 sub index($self) {
     if ($self->param('from_date')) {
         my $v = $self->validation;
@@ -54,18 +71,7 @@ sub index($self) {
 }
 
 sub show($self) {
-    my $property_id = $self->param('property_id');
-    my $property = $self->db->query(q{
-        SELECT
-            property.*,
-            person.first_name || ' ' || person.last_name as owner_name
-        FROM property
-        JOIN person ON host_id=person_id
-        WHERE property_id=?}, $property_id)->hash;
-
-    return $self->reply->not_found unless $property;
-
-    $self->stash(property => $property);
+    my $property = $self->property or return;
 
     my $today = DateTime->today;
     my $from = $self->param('availability_from');
