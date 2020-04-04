@@ -351,7 +351,7 @@ CREATE TABLE "payment" (
   "rental_id" uuid NOT NULL,
   "created_at" timestamp NOT NULL,
   "completed_at" timestamp CHECK (completed_at >= created_at),
-  "type" payment_types NOT NULL,
+  "type" payment_types, -- null until the guest selects a payment type
   "amount" numeric(12,2) NOT NULL,
   "status" payment_statuses NOT NULL,
   PRIMARY KEY ("rental_id", "created_at"),
