@@ -65,6 +65,15 @@ sub startup {
         return $self->helpers->tag(p => (class => 'form-error') => $errors{$e->[0]});
     });
 
+    $self->helper(selected_options => sub ($self, $options, $selected) {
+        my %selected;
+        @selected{(ref $selected ? @$selected : $selected)} = ();
+        [map {
+            my $o = ref $_ ? $_ : [$_ => $_];
+            [@$o, (exists $selected{$o->[1]} ? (selected => 'selected') : ())]
+        } @$options]
+    });
+
     my $v = $self->validator;
     $v->add_check(email_is_unique => sub($v, $name, $value) {
         return !!$self->people->load_by_email($value);

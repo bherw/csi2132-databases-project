@@ -1,0 +1,142 @@
+%= csrf_field
+<div class="row">
+    <div class="input-field col s4">
+        %= text_field 'title', value => $property->{title}
+        %= label_for title => 'Title'
+        %= errors_for 'title'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= text_field 'street_address', value => $property->{street_address}
+        %= label_for street_address => 'Street address'
+        %= errors_for 'street_address'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= text_field 'city', value => $property->{city}
+        %= label_for city => 'City'
+        %= errors_for 'city'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= text_field 'state', value => $property->{state}
+        %= label_for state => 'State'
+        %= errors_for 'state'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= select_field 'country' => selected_options(\@Csi2132::Project::Model::Property::COUNTRIES, $property->{country})
+        %= label_for country => 'Country'
+        %= errors_for 'country'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= text_field 'postal_code', value => $property->{postal_code}
+        %= label_for postal_code => 'Postal code'
+        %= errors_for 'postal_code'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= select_field property_type => selected_options(\@Csi2132::Project::Model::Property::PROPERTY_TYPES, $property->{property_type})
+        %= label_for property_type => 'Property type'
+        %= errors_for 'property_type'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= select_field room_type => selected_options(\@Csi2132::Project::Model::Property::ROOM_TYPES, $property->{room_type})
+        %= label_for room_type => 'Room type'
+        %= errors_for 'room_type'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= number_field 'num_bathrooms', value => $property->{num_bathrooms}
+        %= label_for num_bathrooms => 'Number of bathrooms'
+        %= errors_for 'num_bathrooms'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= number_field 'num_bedrooms', value => $property->{num_bedrooms}
+        %= label_for num_bedrooms => 'Number of bedrooms'
+        %= errors_for 'num_bedrooms'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= number_field 'num_beds', value => $property->{num_beds}
+        %= label_for num_beds => 'Number of beds'
+        %= errors_for 'num_beds'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= time_field 'checkin_time_from', value => $property->{checkin_time_from}
+        %= label_for checkin_time_from => 'Check-ins start at'
+        %= errors_for 'checkin_time_from'
+    </div>
+    <div class="input-field col s4">
+        %= time_field 'checkin_time_to', value => $property->{checkin_time_to}
+        %= label_for checkin_time_to => 'End at'
+        %= errors_for 'checkin_time_to'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= time_field 'checkout_time_from', value => $property->{checkout_time_from}
+        %= label_for checkout_time_from => 'Check-outs start at'
+        %= errors_for 'checkout_time_from'
+    </div>
+    <div class="input-field col s4">
+        %= time_field 'checkout_time_to', value => $property->{checkout_time_to}
+        %= label_for checkout_time_to => 'End at'
+        %= errors_for 'checkout_time_to'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        %= number_field 'base_price', value => $property->{base_price}
+        %= label_for base_price => 'Price per day'
+        %= errors_for 'base_price'
+    </div>
+    <div class="input-field col s4">
+        %= select_field currency => selected_options(\@Csi2132::Project::Model::Property::CURRENCY_TYPES, $property->{currency})
+        %= label_for currency => 'Currency'
+        %= errors_for 'currency'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s12">
+        <%= text_area 'summary' => begin  %><%= $property->{summary} %><%= end %>
+        %= label_for summary => 'Summary'
+        %= errors_for 'summary'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s4">
+        <label>
+            %= check_box 'blocked_booking', (defined $property->{advance_booking_allowed_for_num_months} && $property->{advance_booking_allowed_for_num_months} == 0 ? (checked => 1) : ())
+            <span>Manually unblock available dates</span>
+        </label>
+        %= errors_for 'blocked_booking'
+    </div>
+    <div class="input-field col s8">
+        %= number_field 'advance_booking_allowed_for_num_months', value => $property->{advance_booking_allowed_for_num_months}
+        %= label_for advance_booking_allowed_for_num_months => 'Allow advance booking for how many months? (0 for indefinite)'
+        %= errors_for 'advance_booking_allowed_for_num_months'
+    </div>
+</div>
+<div class="row">
+    <div class="input-field col s12">
+        %= select_field amenities => selected_options(\@Csi2132::Project::Model::Property::AMENITY_TYPES, $amenities), multiple => 1
+        %= label_for amenities => 'Amenities'
+        %= errors_for 'amenities'
+    </div>
+</div>
