@@ -12,10 +12,13 @@
       <div class="navigation-wrapper container">
         <ul>
           <li><a href="/" class="logo">偽BnB</a></li>
-          <li><%= link_to 'Listings' => '/listing' %></li>
+          % if (!current_user || !current_user->is_employee) {
+            <li><%= link_to 'Listings' => '/listing' %></li>
+          % }
           % if (current_user) {
-            <li><%= link_to 'Host' => '/host' %></li>
-            % if (current_user->is_employee) {
+            % if (!current_user->is_employee) {
+              <li><%= link_to 'Host' => '/host' %></li>
+            % } else {
               <li><%= link_to 'Employee View' => '/employee' %></li>
             % }
             <li><%= link_to 'Messages' => url_for '/message' %></li>
