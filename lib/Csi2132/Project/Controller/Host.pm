@@ -146,6 +146,29 @@ sub confirm_delete($self) {
     $self->redirect_to('/host');
 }
 
+sub reject_rental($self) {
+    my $property = $self->property or return;
+    my $person = $self->people->load_by_id($self->param('person_id'))
+        or return $self->reply->not_found;
+
+    my $request = $self->properties->rental_request($property, $person);
+    my $tx = $self->db->begin;
+    $self->properties->reject_rental($property, $person);
+    $self->db->insert($MESSAGE, {
+        property_id => $property->{property_id},
+        sender_id   => $person->{person_id},
+        receiver_id => $request->{person_id},
+        subject     => $property->{title} . ' rental rejected',
+        content     => $person->full_name . ' has rejected your request to rent '
+            . $property->{title} . ' from ' . $request->{starts_at} . ' to '
+            . $request->{ends_at} . '.',
+    });
+    $tx->commit;
+    $self->flash(messages => [ 'Rejected rental request from ' . $person->full_name . '.' ]);
+    $self->redirect_to('/host');
+
+}
+
 sub validate_listing($self) {
     my $v = $self->validation;
     $v->csrf_token;

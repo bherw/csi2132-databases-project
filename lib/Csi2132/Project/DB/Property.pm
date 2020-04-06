@@ -46,6 +46,14 @@ sub delete($self, $property) {
     $tx->commit;
 }
 
+sub reject_rental($self, $property, $person) {
+    my $db = $self->pg->db;
+    my $request = $self->rental_request($property, $person)
+        or die "Unable to find matching rental request.";
+
+    $db->delete($RENTAL_REQUESTS, { property_id => $property->{property_id}, person_id => $person->{person_id} });
+}
+
 # Loads a rental request corresponding to a given property and person.
 # property and person may be loaded hashrefs or simply the ids.
 sub rental_request($self, $property, $person) {
