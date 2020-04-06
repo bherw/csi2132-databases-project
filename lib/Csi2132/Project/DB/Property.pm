@@ -29,6 +29,14 @@ sub can_publish($self, $property) {
         && $property->{currency};
 }
 
+sub delete($self, $property) {
+    my $db = $self->pg->db;
+    my $tx = $db->begin;
+    $db->update($PROPERTY, { is_deleted => 1 }, { property_id => $property->{property_id} });
+    $db->delete($RENTAL_REQUESTS, { property_id => $property->{property_id} });
+    $tx->commit;
+}
+
 sub rental_request($self, $property, $person) {
     my $property_id = ref $property ? $property->{property_id} : $property;
     my $person_id = ref $person ? $person->{person_id} : $person;

@@ -1,0 +1,12 @@
+% layout 'default';
+% title 'Really delete ' . $property->{title} . '?';
+
+<h1><%= 'Really delete ' . $property->{title} . '?' %></h1>
+<div class="row" style="display:flex">
+    %= form_for url_for('/host/' . $property->{property_id})->query(_method => 'DELETE') => (method => 'POST') => begin
+        <div class="row">
+            %= submit_button 'Delete', class => 'waves-effect waves-light btn'
+        </div>
+    %= end
+    %= link_to 'Cancel' => url_for('/host') => (style => "margin-top:.5em; margin-left:1em")
+</div>

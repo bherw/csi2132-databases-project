@@ -51,7 +51,7 @@
                         %= submit_button 'Unpublish', class => 'waves-effect waves-light btn'
                     %= end
                 % }
-                %= form_for "/host/$p->{property_id}" => (method => 'DELETE') => begin
+                %= form_for "/host/$p->{property_id}/delete" => (method => 'POST') => begin
                    %= submit_button 'Delete', class => 'waves-effect waves-light btn'
                 %= end
             </td>

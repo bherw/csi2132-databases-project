@@ -150,6 +150,10 @@ sub startup {
     $r->post('/host/create')->over(user_access => 'host/create')->to('host#post_create');
     $r->get('/host/:property_id/edit')->over(user_access => 'host/edit')->to('host#edit');
     $r->post('/host/:property_id/edit')->over(user_access => 'host/edit')->to('host#post_edit');
+    $r->post('/host/:property_id/publish')->over(user_access => 'host/publish')->to('host#publish');
+    $r->post('/host/:property_id/unpublish')->over(user_access => 'host/unpublish')->to('host#unpublish');
+    $r->post('/host/:property_id/delete')->over(user_access => 'host/delete')->to('host#delete');
+    $r->delete('/host/:property_id')->over(user_access => 'host/delete')->to('host#confirm_delete');
 
     # Employee page
     $r->get('/employee')->over(user_access => sub($c, $user) { $user->is_employee })->to('employee#index');
