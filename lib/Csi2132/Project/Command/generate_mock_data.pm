@@ -8,6 +8,7 @@ use DateTime::Format::Pg;
 use List::Util qw(min max);
 use POSIX qw(DBL_MIN);
 use Text::Lorem;
+use Csi2132::Project::Model::Property;
 
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
@@ -49,29 +50,11 @@ use constant TWO_PI => 2.0 * 3.14159265358979323846;
 use constant REVIEW_CHANCE => 0.95;
 
 const my @ACCESSIBILITY_TYPES => ('No stairs or steps to enter', 'Wide entrance for guests', 'Well-lit path to entrance', 'Step-free path to entrance');
-const my @COUNTRIES => qw(USA Canada Germany UK France Mexico Japan China);
-const my @PROPERTY_TYPES => (
-    # Apartment
-    'Apartment', 'Condominium', 'Casa particular (Cuba)', 'Loft', 'Serviced apartment',
-
-    # House
-    'House', 'Bungalow', 'Cabin', 'Chalet', 'Cottage', 'Cycladic house (Greece)', 'Dammuso (Italy)', 'Dome house', 'Earth house', 'Farm stay', 'Houseboat', 'Hut', 'Lighthouse', 'Pension (South Korea)', 'Shepherds Hut (U.K., France)', 'Tiny house', 'Townhouse', 'Trullo (Italy)', 'Villa',
-
-    # Secondary unit
-    'Guesthouse', 'Guest suite',
-
-    # Unique space
-    'Barn', 'Boat', 'Bus', 'Camper/RV', 'Campsite', 'Castle', 'Cave', 'Igloo', 'Island', 'Plane', 'Tent', 'Teepee', 'Train', 'Treehouse', 'Windmill', 'Yurt',
-
-    # Bed and breakfast
-    'Minsu (Taiwan)', 'Nature lodge', 'Ryokan (Japan)',
-
-    # Boutique hotel
-    'Boutique hotel', 'Aparthotel', 'Heritage hotel (India)', 'Hostel', 'Hotel', 'Resort', 'Kezhan (China)'
-);
-const my @ROOM_TYPES => ('Entire place', 'Private room', 'Hotel room', 'Shared room');
-const my @CURRENCY_TYPES => ('CAD', 'USD');
-const my @AMENITY_TYPES => ('Essentials', 'Air conditioning', 'Heat', 'Hair dryer', 'Closet / drawers', 'Iron', 'TV', 'Fireplace', 'Private entrance', 'Shampoo', 'Wifi', 'Desk/workspace', 'Breakfast, coffee, tea', 'Fire extinguisher', 'Carbon monoxide detector', 'Smoke detector', 'First aid kit', 'Indoor fireplace', 'Hangers', 'Crib', 'High chair', 'Self check-in', 'Private bathroom', 'Beachfront', 'Waterfront', 'Ski-in/ski-out');
+my @COUNTRIES = @Csi2132::Project::Model::Property::COUNTRIES;
+my @PROPERTY_TYPES = @Csi2132::Project::Model::Property::PROPERTY_TYPES;
+my @ROOM_TYPES = @Csi2132::Project::Model::Property::ROOM_TYPES;
+my @CURRENCY_TYPES = @Csi2132::Project::Model::Property::CURRENCY_TYPES;
+my @AMENITY_TYPES = @Csi2132::Project::Model::Property::AMENITY_TYPES;
 const my @BED_TYPES => ('King', 'Queen', 'Double', 'Single');
 const my @HOST_LANGUAGES => ('English', 'German', 'French', 'Japanese');
 const my @RENTAL_AGREEMENT_PAYMENT_STATUSES => ('Pending', 'Payment ongoing', 'Complete');
