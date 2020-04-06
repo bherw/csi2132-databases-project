@@ -8,6 +8,27 @@ use Mojo::Base -base, -signatures;
 
 has 'pg';
 
+sub can_publish($self, $property) {
+    if (!ref $property) {
+        $property = $self->pg->db->query('SELECT * FROM property WHERE property_id = ?', $property)->hash;
+    }
+
+    return !$property->{is_published}
+        && $property->{street_address}
+        && $property->{state}
+        && $property->{country}
+        && $property->{postal_code}
+        && defined $property->{checkin_time_from}
+        && defined $property->{checkin_time_to}
+        && defined $property->{checkout_time_from}
+        && defined $property->{checkout_time_to}
+        && defined $property->{checkin_time_from}
+        && $property->{base_price}
+        && $property->{min_price}
+        && $property->{max_price}
+        && $property->{currency};
+}
+
 sub rental_request($self, $property, $person) {
     my $property_id = ref $property ? $property->{property_id} : $property;
     my $person_id = ref $person ? $person->{person_id} : $person;

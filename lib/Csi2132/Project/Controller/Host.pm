@@ -44,20 +44,7 @@ sub index($self) {
         }, $person->{person_id})->hashes;
 
     for (@$properties) {
-        $_->{can_publish} = !$_->{is_published}
-            && $_->{street_address}
-            && $_->{state}
-            && $_->{country}
-            && $_->{postal_code}
-            && defined $_->{checkin_time_from}
-            && defined $_->{checkin_time_to}
-            && defined $_->{checkout_time_from}
-            && defined $_->{checkout_time_to}
-            && defined $_->{checkin_time_from}
-            && $_->{base_price}
-            && $_->{min_price}
-            && $_->{max_price}
-            && $_->{currency};
+        $_->{can_publish} = $self->properties->can_publish($_);
     }
 
     $self->stash(properties => $properties);
@@ -110,6 +97,40 @@ sub post_edit($self) {
 
     $self->flash(messages => ['Updated ' . $attrs->{title}]);
     $self->redirect_to($self->url_for('/host'));
+}
+
+sub publish($self) {
+    my $property = $self->property;
+
+    if (!$self->properties->can_publish($property)) {
+        $self->add_error("Can't publish $property->{title} yet, please finish filling it out");
+        $self->redirect_to('/host');
+        return;
+    }
+
+    $self->db->update($PROPERTY, { is_published => 1 }, { property_id => $property->{property_id}});
+    $self->flash(messages => ["Published $property->{title}"]);
+    $self->redirect_to('/host');
+}
+
+sub unpublish($self) {
+    my $property = $self->property;
+
+    $self->db->update($PROPERTY, { is_published => 0 }, { property_id => $property->{property_id}});
+    $self->flash(messages => ["Unpublished $property->{title}"]);
+    $self->redirect_to('/host');
+}
+
+sub delete($self) {
+    $self->property;
+}
+
+sub confirm_delete($self) {
+    my $property = $self->property;
+
+    $self->properties->delete($property);
+    $self->flash(messages => ["Deleted $property->{title}"]);
+    $self->redirect_to('/host');
 }
 
 sub validate_listing($self) {
