@@ -142,7 +142,7 @@ sub startup {
     $r->get('/employee')->over(user_access => sub($c, $user) { $user->is_employee })->to('employee#index');
 
     # Messages
-    $r->get('/message')->to('message#index');
+    $r->get('/message')->over(user_access => 'message/index')->to('message#index');
 
     # Users
     $r->get('/user')->over(user_access => 'user/view self')->to('user#show');
