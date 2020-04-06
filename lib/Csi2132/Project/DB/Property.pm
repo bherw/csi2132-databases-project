@@ -1,5 +1,6 @@
 package Csi2132::Project::DB::Property;
 use Csi2132::Project::DB;
+use Data::GUID qw(guid);
 use DateTime;
 use DateTime::Format::Pg;
 use Scalar::Util qw(blessed);
@@ -44,6 +45,29 @@ sub delete($self, $property) {
     $db->update($PROPERTY, { is_deleted => 1 }, { property_id => $property->{property_id} });
     $db->delete($RENTAL_REQUESTS, { property_id => $property->{property_id} });
     $tx->commit;
+}
+
+sub accept_rental($self, $property, $person, $options = {}) {
+    my $db = $self->pg->db;
+    my $request = $self->rental_request($property, $person)
+        or die "Unable to find matching rental request.";
+
+    $options->{autocommit} //= 1;
+    my $tx = $db->begin if $options->{autocommit};
+    my $rental_id = guid();
+    my $starts_at = DateTime::Format::Pg->parse_datetime($request->{starts_at});
+    my $ends_at = DateTime::Format::Pg->parse_datetime($request->{ends_at});
+    my $days = $starts_at->delta_days($ends_at)->delta_days;
+    $db->insert($RENTAL_AGREEMENT, {
+        rental_id      => $rental_id,
+        signed_at      => DateTime::Format::Pg->format_date(DateTime->now),
+        %$request{qw(property_id person_id starts_at ends_at)},
+        total_price    => ($days + 1) * $property->{base_price},
+        payment_status => 'Pending',
+    });
+    $db->delete($RENTAL_REQUESTS, { property_id => $property->{property_id}, person_id => $person->{person_id} });
+    $tx->commit if $options->{autocommit};
+    return $db->query(qq{SELECT * FROM $RENTAL_AGREEMENT WHERE rental_id = ?}, $rental_id)->hash;
 }
 
 sub reject_rental($self, $property, $person) {

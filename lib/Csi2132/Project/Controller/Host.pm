@@ -142,7 +142,35 @@ sub confirm_delete($self) {
     my $property = $self->property;
 
     $self->properties->delete($property);
-    $self->flash(messages => ["Deleted $property->{title}"]);
+    $self->flash(messages => [ "Deleted $property->{title}" ]);
+    $self->redirect_to('/host');
+}
+
+sub accept_rental($self) {
+    my $property = $self->property or return;
+    my $person = $self->people->load_by_id($self->param('person_id'))
+        or return $self->reply->not_found;
+
+    my $tx = $self->db->begin;
+    my $ra = $self->properties->accept_rental($property, $person, { autocommit => 0 });
+    $self->db->insert($PAYMENT, {
+        rental_id  => $ra->{rental_id},
+        created_at => DateTime::Format::Pg->format_datetime(DateTime->now),
+        amount     => $ra->{total_price},
+        status     => 'Pending',
+    });
+    $self->db->insert($MESSAGE, {
+        property_id => $property->{property_id},
+        sender_id   => $person->{person_id},
+        receiver_id => $ra->{person_id},
+        subject     => $property->{title} . ' rental accepted',
+        content     => $person->full_name . ' has accepted your request to rent '
+            . $property->{title} . ' from ' . $ra->{starts_at}
+            . ' to ' . $ra->{ends_at} . '. '
+            . 'A bill for ' . $ra->{total_price} . ' has been generated.',
+    });
+    $tx->commit;
+    $self->flash(messages => [ 'Accepted rental request from ' . $person->full_name . '. A bill in the amount of ' . $ra->{total_price} . ' has been forwarded to the guest along with the rental agreement.' ]);
     $self->redirect_to('/host');
 }
 

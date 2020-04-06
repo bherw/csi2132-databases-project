@@ -154,6 +154,7 @@ sub startup {
     $r->post('/host/:property_id/unpublish')->over(user_access => 'host/unpublish')->to('host#unpublish');
     $r->post('/host/:property_id/delete')->over(user_access => 'host/delete')->to('host#delete');
     $r->delete('/host/:property_id')->over(user_access => 'host/delete')->to('host#confirm_delete');
+    $r->post('/host/:property_id/:person_id/accept')->over(user_access => 'host/accept')->to('host#accept_rental');
     $r->post('/host/:property_id/:person_id/reject')->over(user_access => 'host/reject')->to('host#reject_rental');
 
     # Employee page
