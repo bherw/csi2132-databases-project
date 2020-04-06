@@ -1,0 +1,13 @@
+% layout 'default';
+% title 'Edit ' . $property->{title};
+
+<div class="row">
+    <h1>Edit <%= $property->{title} %></h1>
+        %= form_for '/host/' . $property->{property_id} . '/edit' => (method => 'POST', class => 's12 col') => begin
+        %= include 'host/_form', property => $property, amenities => $amenities
+
+        <div class="row">
+            %= submit_button 'Update', class => 'waves-effect waves-light btn'
+        </div>
+%= end
+</div>

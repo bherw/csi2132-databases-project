@@ -148,6 +148,8 @@ sub startup {
     $r->get('/host')->over(user_access => 'host/index')->to('host#index');
     $r->get('/host/create')->over(user_access => 'host/create')->to('host#create');
     $r->post('/host/create')->over(user_access => 'host/create')->to('host#post_create');
+    $r->get('/host/:property_id/edit')->over(user_access => 'host/edit')->to('host#edit');
+    $r->post('/host/:property_id/edit')->over(user_access => 'host/edit')->to('host#post_edit');
 
     # Employee page
     $r->get('/employee')->over(user_access => sub($c, $user) { $user->is_employee })->to('employee#index');

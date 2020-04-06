@@ -128,7 +128,7 @@
         %= errors_for 'blocked_booking'
     </div>
     <div class="input-field col s8">
-        %= number_field 'advance_booking_allowed_for_num_months', value => $property->{advance_booking_allowed_for_num_months}
+        %= number_field 'advance_booking_allowed_for_num_months', value => defined $property->{advance_booking_allowed_for_num_months} ? $property->{advance_booking_allowed_for_num_months} : 0
         %= label_for advance_booking_allowed_for_num_months => 'Allow advance booking for how many months? (0 for indefinite)'
         %= errors_for 'advance_booking_allowed_for_num_months'
     </div>

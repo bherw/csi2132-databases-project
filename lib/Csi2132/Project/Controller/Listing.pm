@@ -105,7 +105,7 @@ sub create_rental_request($self) {
             $v->optional('to_date')->date->gte('from_date');
         }
 
-        return $self->render('user/register') if $v->has_error;
+        return $self->render('listing/rent') if $v->has_error;
 
         if ($self->properties->rental_request($property, $person)) {
             $self->add_error('You already have a pending rental request');
