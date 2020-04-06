@@ -7,12 +7,12 @@
     <div class="input-field col s3">
         %= date_field 'from_date'
         %= label_for from_date => 'From'
-        %= errors_for 'from_date'
+        %= errors_for 'from_date' => (date => 'Please enter a date')
     </div>
     <div class="input-field col s3">
         %= date_field 'to_date'
         %= label_for to_date => 'To'
-        %= errors_for to_date => (gte => 'Must be greater than or equal to the from date.')
+        %= errors_for to_date => (date => 'Please enter a date', gte => 'Must be greater than or equal to the from date.')
     </div>
     <div class="input-field col s3">
         %= submit_button 'Rent', class => 'waves-effect waves-light btn'

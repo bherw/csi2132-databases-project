@@ -98,20 +98,16 @@ sub create_rental_request($self) {
     my $person = $self->current_user;
 
     # Validate
-    if ($self->param('from_date')) {
-        my $v = $self->validation;
-        $v->required('from_date')->date;
-        if ($self->param('to_date')) {
-            $v->optional('to_date')->date->gte('from_date');
-        }
+    my $v = $self->validation;
+    $v->required('from_date')->date;
+    $v->required('to_date')->date->gte('from_date');
 
-        return $self->render('listing/rent') if $v->has_error;
+    return $self->render('listing/rent') if $v->has_error;
 
-        if ($self->properties->rental_request($property, $person)) {
-            $self->add_error('You already have a pending rental request');
-            $self->redirect_to($self->url_for("/listing/$property->{property_id}"));
-            return;
-        }
+    if ($self->properties->rental_request($property, $person)) {
+        $self->add_error('You already have a pending rental request');
+        $self->redirect_to($self->url_for("/listing/$property->{property_id}"));
+        return;
     }
 
     $self->db->insert($RENTAL_REQUESTS, {
