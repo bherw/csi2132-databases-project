@@ -38,4 +38,7 @@ sub index($self) {
     $self->stash(rental_requests => $rental_requests);
 }
 
+sub create($self) {
+}
+
 1;

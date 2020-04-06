@@ -137,6 +137,8 @@ sub startup {
 
     # Host
     $r->get('/host')->over(user_access => 'host/index')->to('host#index');
+    $r->get('/host/create')->over(user_access => 'host/create')->to('host#create');
+    $r->post('/host/create')->over(user_access => 'host/create')->to('host#post_create');
 
     # Employee page
     $r->get('/employee')->over(user_access => sub($c, $user) { $user->is_employee })->to('employee#index');
