@@ -42,6 +42,18 @@ sub index($self) {
         JOIN $PROPERTY USING ("property_id")
         WHERE host_id = ?
         }, $person->{person_id})->hashes;
+    my $rental_agreements = $self->db->query(qq{
+        SELECT
+            RA.*,
+            person.first_name || ' ' || person.last_name AS guest_name,
+            $PROPERTY.title
+        FROM $RENTAL_AGREEMENT RA
+        JOIN $PERSON USING ("person_id")
+        JOIN $PROPERTY USING ("property_id")
+        WHERE host_id = ?
+        AND ends_at >= current_date
+        ORDER BY title ASC, starts_at ASC
+        }, $person->person_id)->hashes;
 
     for (@$properties) {
         $_->{can_publish} = $self->properties->can_publish($_);
@@ -49,6 +61,7 @@ sub index($self) {
 
     $self->stash(properties => $properties);
     $self->stash(rental_requests => $rental_requests);
+    $self->stash(rental_agreements => $rental_agreements);
 }
 
 sub create($self) {

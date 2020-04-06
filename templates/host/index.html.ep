@@ -28,6 +28,27 @@
     % }
 % }
 
+% if (@$properties) {
+    <h2>My Rental Agreements</h2>
+    % if (@$rental_agreements) {
+        <table>
+            <tr><th>Who</th><th>Property</th><th>From</th><th>To</th><th>Price</th><th>Payment status</th></tr>
+            % for my $ra (@$rental_agreements) {
+            <tr>
+                <td><%= $ra->{guest_name} %></td>
+                <td><%= $ra->{title} %></td>
+                <td><%= $ra->{starts_at} %></td>
+                <td><%= $ra->{ends_at} %></td>
+                <td><%= $ra->{total_price} %></td>
+                <td><%= $ra->{payment_status} %></td>
+            </tr>
+        % }
+        </table>
+    % } else {
+        <p>No agreements.</p>
+    % }
+% }
+
 <h2>My Properties</h2>
 
 %= link_to 'List a new property' => url_for '/host/create'
