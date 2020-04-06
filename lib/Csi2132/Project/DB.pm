@@ -57,6 +57,21 @@ sub insert_all($self, $table, $values, $options = {}) {
     $tx->commit if $options->{autocommit};
 }
 
+# A helper function for making very basic UPDATE queries. Again, this is roughly
+# equivalent to the SQL::Abstract version, just much less flexible.
+sub update($self, $table, $values, $where) {
+    my $attributes = join ',', map { quotemeta($_) . '=?' } keys %$values;
+    my $where_clause = join ' AND ', map { quotemeta($_) . '=?' } keys %$where;
+    $self->query("UPDATE $table SET $attributes WHERE $where_clause", values %$values, values %$where);
+}
+
+# A helper function for making very basic DELETE queries. Again, this is roughly
+# equivalent to the SQL::Abstract version, just much less flexible.
+sub delete($self, $table, $where) {
+    my $where_clause = join ' AND ', map { quotemeta($_) . '=?' } keys %$where;
+    $self->query("DELETE FROM $table WHERE $where_clause", values %$where);
+}
+
 # This class method exports the relation names as constants into packages which
 # import this package, which allows relations to be renamed without need for codebase changes.
 # Warning: Contains mild levels of perl magic.
