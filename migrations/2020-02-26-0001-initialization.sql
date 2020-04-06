@@ -37,7 +37,7 @@ CREATE TYPE bed_types AS ENUM('King', 'Queen', 'Double', 'Single');
 CREATE TYPE host_languages AS ENUM('English', 'German', 'French', 'Japanese');
 
 CREATE TYPE rental_agreement_payment_statuses AS ENUM('Pending', 'Payment ongoing', 'Complete');
-CREATE TYPE payment_types AS ENUM('Credit', 'Debit', 'Cash');
+CREATE TYPE payment_types AS ENUM('Cash', 'Credit', 'Debit');
 CREATE TYPE payment_statuses AS ENUM('Pending', 'Approved', 'Complete');
 CREATE TYPE password_hash_types AS ENUM('sha512_base64');
 
