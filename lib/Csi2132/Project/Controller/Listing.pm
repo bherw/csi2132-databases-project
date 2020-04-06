@@ -72,7 +72,11 @@ sub index($self) {
 
 sub show($self) {
     my $property = $self->property or return;
+    my $property_id = $property->{property_id};
     $self->stash(rental_request => scalar $self->properties->rental_request($property, $self->current_user));
+
+    my $amenities = $self->db->query(qq{SELECT amenity FROM $PROPERTY_AMENITY WHERE property_id = ?}, $property_id)->arrays->flatten;
+    $self->stash(amenities => $amenities);
 
     my $today = DateTime->today;
     my $from = $self->param('availability_from');

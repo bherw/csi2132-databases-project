@@ -6,19 +6,6 @@
     <div class="col s12">
         <h1><%= $p->{title} %></h1>
         <p>Hosted by <%= $p->{owner_name} %></p>
-        <div>
-            <div style="display:flex">
-                <div style="margin-right: 1rem;" class="blue-text accent-3">
-                    <i class="material-icons">location_on</i>
-                </div>
-                <div>
-                    <%= $p->{street_address} %><br/>
-                    <%= $p->{city} %>, <%= $p->{state} %>, <%= $p->{postal_code} %><br/>
-                    <%= $p->{country} %>
-                </div>
-
-            </div>
-        </div>
         % if ($rental_request) {
             <div>You have a pending request to rent this property from
                 %= $rental_request->{starts_at}
@@ -34,6 +21,34 @@
                 %= link_to 'Request a rental' => url_for '/listing/' . $property->{property_id} . '/rent'
             </div>
         % }
+        <div style="margin-top: 2em">
+            <div style="display:flex">
+                <div style="margin-right: 1rem;" class="blue-text accent-3">
+                    <i class="material-icons">location_on</i>
+                </div>
+                <div>
+                    <%= $p->{street_address} %><br/>
+                    <%= $p->{city} %>, <%= $p->{state} %>, <%= $p->{postal_code} %><br/>
+                    <%= $p->{country} %>
+                </div>
+            </div>
+            <div>
+                <p>Property type: <%= $p->{property_type} %></p>
+                <p>Room type: <%= $p->{room_type} %></p>
+                <p>Price: <%= $p->{base_price} %></p>
+                <p>Number of bedrooms: <%= $p->{num_bedrooms} %></p>
+                <p>Number of beds: <%= $p->{num_beds} %></p>
+                <p>Number of bathrooms: <%= $p->{num_bathrooms} %></p>
+                <div>
+                    <h3>Amenities</h3>
+                    <ul>
+                        % for my $amenity (@$amenities) {
+                            <li><%= $amenity %></li>
+                        % }
+                    </ul>
+                </div>
+            </div>
+        </div>
         <h2>Availability</h2>
         <div class="prevnext">
             <div>
