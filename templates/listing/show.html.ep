@@ -16,9 +16,9 @@
             <div>
                 %= link_to 'Login to request a rental' => url_for '/user/login'
             </div>
-        % } else {
+        % } elsif (!current_user->is_employee) {
             <div>
-                %= link_to 'Request a rental' => url_for '/listing/' . $property->{property_id} . '/rent'
+                %= link_to 'Login to request a rental' => url_for '/user/login'
             </div>
         % }
         <div style="margin-top: 2em">
