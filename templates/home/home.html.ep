@@ -2,10 +2,17 @@
 % title 'Welcome';
 <h2>Welcome to 偽BnB</h2>
 <p>
-    <%= link_to 'Find somewhere to stay?' => url_for '/listing' %>
-    % if (current_user) {
-        Or <%= link_to 'host your own property' => '/host' %>!
+    % if(current_user){
+
+        % if (current_user->is_employee) {
+            <%= link_to 'View listings in your country' => '/employee' %>!
+
+        % } else {
+            <%= link_to 'Find somewhere to stay?' => url_for '/listing' %>
+            Or <%= link_to 'host your own property' => '/host' %>!
+        % }
     % } else {
+        <%= link_to 'Find somewhere to stay?' => url_for '/listing' %>
         Or <%= link_to 'register' => '/user/register' %> to host your own property.
     % }
 </p>

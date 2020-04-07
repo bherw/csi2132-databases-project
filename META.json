@@ -3,7 +3,7 @@
    "author" : [
       "Ben Herweyer <benjamin.herweyer@gmail.com>",
       "Robert Zhang <rzhan136@uottawa.ca>",
-      "Sean Lemione <slemo007@uottawa.ca>"
+      "Sean Lemoine <slemo007@uottawa.ca>"
    ],
    "dynamic_config" : 0,
    "license" : [
@@ -64,4 +64,3 @@
    },
    "version" : "0.001"
 }
-

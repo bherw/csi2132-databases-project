@@ -2,3 +2,14 @@
 % title 'Employee index';
 
 <h1>Employees, welcome</h1>
+
+<table>
+    <tr><th>Property</th><th>City</th><th>Daily price</th></tr>
+    % for my $listing (@$listings) {
+        %= tag tr => begin
+            %= t td => link_to $listing->{title} => url_for('/listing/' . $listing->{property_id})
+            %= t td => $listing->{city}
+            %= t td => '$' . $listing->{base_price}
+        %= end
+    % }
+</table>

@@ -40,6 +40,7 @@ sub can_publish($self, $property) {
 sub delete($self, $property) {
     my $db = $self->pg->db;
     my $tx = $db->begin;
+    $db->update($PROPERTY, { is_published => 0 }, { property_id => $property->{property_id} });
     $db->update($PROPERTY, { is_deleted => 1 }, { property_id => $property->{property_id} });
     $db->delete($RENTAL_REQUESTS, { property_id => $property->{property_id} });
     $tx->commit;
