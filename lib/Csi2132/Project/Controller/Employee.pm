@@ -1,5 +1,7 @@
 package Csi2132::Project::Controller::Employee;
 use Csi2132::Project::DB;
+use DateTime;
+
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 
 has property => sub($self) {
@@ -25,13 +27,19 @@ sub index($self) {
     my $country = $self->current_user->country;
 
     my $listings = $self->db->query(qq{
-        SELECT property_id, title, base_price, city
+        SELECT property_id, title, base_price, city, advance_booking_allowed_for_num_months, days_of_notice_required
         FROM $PROPERTY P
         WHERE is_published AND P.country = \'$country\'
         $where_city
         }, ($city ? $city : ()))->hashes;
-
     $self->stash(listings => $listings);
+
+    my $from = DateTime->today;
+    my $to = $from->clone->add(days => 7);
+    for my $l (@$listings) {
+        $l->{unavailability} = $self->properties->unavailability($l, $from, $to);
+        $l->{occupancy_rate} = scalar(grep { $l->{unavailability}{$_} } keys %{ $l->{unavailability} }) / scalar keys %{ $l->{unavailability} };
+    }
 }
-#self->current_user->country; get current country from user (person object)
+
 1;

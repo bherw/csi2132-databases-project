@@ -4,12 +4,19 @@
 <h1>Employees, welcome</h1>
 
 <table>
-    <tr><th>Property</th><th>City</th><th>Daily price</th></tr>
+    <tr><th>Property</th><th>City</th><th>7-day Occupancy</th></tr>
     % for my $listing (@$listings) {
         %= tag tr => begin
             %= t td => link_to $listing->{title} => url_for('/listing/' . $listing->{property_id})
             %= t td => $listing->{city}
-            %= t td => '$' . $listing->{base_price}
+            <td>
+                %= sprintf('%.02f', $listing->{occupancy_rate} * 100) . '%'
+                <ul style="display: flex">
+                    % for (sort keys %{ $listing->{unavailability} }) {
+                        <li style="width: 1em; height: 1em" class="<%= $listing->{unavailability}{$_} ? 'green' : 'red' %>">&nbsp;</li>
+                    % }
+                </ul>
+            </td>
         %= end
     % }
 </table>
