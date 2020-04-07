@@ -2,6 +2,7 @@
 % title 'Employee index';
 
 <h1>Employees, welcome</h1>
+<p>Showing properties attached to the <%= current_user->country %> branch</p>
 
 <table>
     <tr><th>Property</th><th>City</th><th>7-day Occupancy</th></tr>
