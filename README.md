@@ -7,6 +7,7 @@ Highlights:
     - transparently upgrading hashing algorithms and replacing old server secrets
     - preventing timing attacks to determine if an user (email) exists on the system
 - mock data can be generated
+- supports database migrations
 - the availability algorithm checks the following:
   - start and stop dates for the availability request
   - the property's configured minimum days of notice before booking
